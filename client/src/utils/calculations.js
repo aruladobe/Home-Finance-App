@@ -117,7 +117,9 @@ export const CATEGORY_COLORS = {
   Kids: '#f43f5e', Education: '#8b5cf6', Transport: '#f59e0b',
   Grocery: '#10b981', Entertainment: '#3b82f6', Maintenance: '#6366f1',
   Furniture: '#14b8a6', Medicine: '#ef4444', Functions: '#a855f7',
-  Celebrations: '#ec4899', Insurance: '#0ea5e9'
+  Celebrations: '#ec4899', Insurance: '#0ea5e9',
+  'Loan Repayment': '#dc2626', Bills: '#d97706', 'Fuel and Gas': '#7c3aed',
+  Outing: '#0891b2', Party: '#db2777'
 };
 
 export const INCOME_COLORS = {

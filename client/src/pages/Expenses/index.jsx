@@ -9,7 +9,7 @@ import ProjectionPanel from '../../components/common/ProjectionPanel';
 import { formatCurrency, filterByPeriod, sumAmounts, groupByCategory, CATEGORY_COLORS, calculateProjection } from '../../utils/calculations';
 import { format, isPast, isToday, differenceInDays } from 'date-fns';
 
-const CATEGORIES = ['Kids','Education','Transport','Grocery','Entertainment','Maintenance','Furniture','Medicine','Functions','Celebrations','Insurance'];
+const CATEGORIES = ['Kids','Education','Transport','Grocery','Entertainment','Maintenance','Furniture','Medicine','Functions','Celebrations','Insurance','Loan Repayment','Bills','Fuel and Gas','Outing','Party'];
 const PERIODS = ['daily','monthly','yearly'];
 
 const today = new Date().toISOString().split('T')[0];
@@ -31,7 +31,7 @@ function DueBadge({ effectiveDate }) {
 }
 
 export default function ExpensesPage() {
-  const { expenses, addExpense, updateExpense, deleteExpense, familyMembers, period,
+  const { income, expenses, addExpense, updateExpense, deleteExpense, familyMembers, period,
           plannedExpenses, addPlannedExpense, updatePlannedExpense, deletePlannedExpense, movePlannedToExpense } = useFinance();
 
   const [tab, setTab] = useState('actual');
@@ -68,6 +68,8 @@ export default function ExpensesPage() {
   // Planned expenses summary
   const plannedTotal = useMemo(() => plannedExpenses.reduce((s, e) => s + e.amount, 0), [plannedExpenses]);
   const dueCount = useMemo(() => plannedExpenses.filter(e => isPast(new Date(e.effectiveDate)) || isToday(new Date(e.effectiveDate))).length, [plannedExpenses]);
+  const netProfit = useMemo(() => sumAmounts(filterByPeriod(income, period)) - sumAmounts(filterByPeriod(expenses, period)), [income, expenses, period]);
+  const needToEarn = useMemo(() => Math.max(0, plannedTotal - Math.max(0, netProfit)), [plannedTotal, netProfit]);
 
   // --- Actual expense handlers ---
   const openAdd = () => { setEditItem(null); setForm(emptyForm); setModalOpen(true); };
@@ -300,18 +302,28 @@ export default function ExpensesPage() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <StatCard title="Total Planned" value={formatCurrency(plannedTotal)} icon={Calendar} color="expense" subtitle={`${plannedExpenses.length} planned`} />
             <StatCard title="Due Now" value={dueCount} icon={Clock} color="expense" subtitle="Ready to mark done" />
-            <StatCard title="Need to Earn" value={formatCurrency(plannedTotal)} icon={TrendingDown} color="expense" subtitle="To cover all planned" />
+            <StatCard title="Need to Earn" value={formatCurrency(needToEarn)} icon={TrendingDown} color={needToEarn === 0 ? 'income' : 'expense'} subtitle={needToEarn === 0 ? 'Covered by net profit' : 'Still needed beyond profit'} />
             <StatCard title="Upcoming" value={plannedExpenses.length - dueCount} icon={Calendar} color="income" subtitle="Future expenses" />
           </div>
 
           {/* Need-to-earn banner */}
           {plannedExpenses.length > 0 && (
-            <div className="glass-card p-4 border border-primary-500/20 bg-primary-500/5">
+            <div className={`glass-card p-4 border ${needToEarn === 0 ? 'border-green-500/20 bg-green-500/5' : 'border-primary-500/20 bg-primary-500/5'}`}>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-white/60">You need to earn at least</p>
-                  <p className="text-2xl font-bold text-primary-400">{formatCurrency(plannedTotal)}</p>
-                  <p className="text-xs text-white/40 mt-0.5">to cover {plannedExpenses.length} planned expense{plannedExpenses.length !== 1 ? 's' : ''}</p>
+                  {needToEarn === 0 ? (
+                    <>
+                      <p className="text-sm text-white/60">Your net profit covers all planned expenses</p>
+                      <p className="text-2xl font-bold text-green-400">{formatCurrency(plannedTotal)}</p>
+                      <p className="text-xs text-white/40 mt-0.5">covered — surplus of {formatCurrency(netProfit - plannedTotal)}</p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-sm text-white/60">You still need to earn</p>
+                      <p className="text-2xl font-bold text-primary-400">{formatCurrency(needToEarn)}</p>
+                      <p className="text-xs text-white/40 mt-0.5">after your net profit of {formatCurrency(netProfit)} to cover {plannedExpenses.length} planned expense{plannedExpenses.length !== 1 ? 's' : ''}</p>
+                    </>
+                  )}
                 </div>
                 {dueCount > 0 && (
                   <div className="text-right">
