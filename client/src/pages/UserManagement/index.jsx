@@ -31,6 +31,7 @@ const emptyForm = { name: '', relationship: 'Son', email: '', phone: '', age: ''
 export default function UserManagement() {
   const { familyMembers, addFamilyMember, updateFamilyMember, deleteFamilyMember } = useFinance();
   const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
   const [modalOpen, setModalOpen] = useState(false);
   const [editItem, setEditItem] = useState(null);
   const [form, setForm] = useState(emptyForm);
@@ -67,7 +68,7 @@ export default function UserManagement() {
       <div className="glass-card p-6 bg-gradient-to-br from-primary-500/15 to-purple-600/10 border-primary-500/20">
         <div className="flex items-center justify-between mb-4">
           <h3 className="section-title">Account Owner</h3>
-          <span className="badge bg-primary-500/20 text-primary-400">Admin</span>
+          <span className="badge bg-primary-500/20 text-primary-400 capitalize">{user?.role || 'user'}</span>
         </div>
         <div className="flex items-center gap-4">
           <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-500 to-purple-600 flex items-center justify-center text-2xl shadow-lg">
@@ -83,13 +84,15 @@ export default function UserManagement() {
       {/* Family members header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Users size={18} className="text-slate-400 dark:text-white/50" />
+          <Users aria-hidden="true" size={18} className="text-slate-400 dark:text-white/50" />
           <h3 className="section-title">Family Members</h3>
           <span className="badge bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-white/50 ml-1">{familyMembers.length}</span>
         </div>
-        <button onClick={openAdd} className="btn-primary flex items-center gap-2 text-sm">
-          <Plus size={16} /> Add Member
-        </button>
+        {isAdmin && (
+          <button onClick={openAdd} className="btn-primary flex items-center gap-2 text-sm">
+            <Plus aria-hidden="true" size={16} /> Add Member
+          </button>
+        )}
       </div>
 
       {/* Members grid */}
@@ -98,9 +101,11 @@ export default function UserManagement() {
           <div className="text-5xl mb-4">👨‍👩‍👧‍👦</div>
           <p className="text-slate-500 dark:text-white/50 mb-2">No family members added yet</p>
           <p className="text-slate-400 dark:text-white/30 text-sm mb-6">Add family members to track their income and expenses separately</p>
-          <button onClick={openAdd} className="btn-primary inline-flex items-center gap-2">
-            <Plus size={16} /> Add First Member
-          </button>
+          {isAdmin && (
+            <button onClick={openAdd} className="btn-primary inline-flex items-center gap-2">
+              <Plus aria-hidden="true" size={16} /> Add First Member
+            </button>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -110,14 +115,16 @@ export default function UserManagement() {
                 <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-white/10 flex items-center justify-center text-2xl">
                   {RELATIONSHIP_AVATARS[member.relationship] || '👤'}
                 </div>
-                <div className="flex gap-1">
-                  <button onClick={() => openEdit(member)} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400 dark:text-white/40 hover:text-primary-500 dark:hover:text-primary-400 transition-colors">
-                    <Edit2 size={14} />
-                  </button>
-                  <button onClick={() => handleDelete(member._id || member.id)} className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 text-slate-400 dark:text-white/40 hover:text-red-500 dark:hover:text-red-400 transition-colors">
-                    <Trash2 size={14} />
-                  </button>
-                </div>
+                {isAdmin && (
+                  <div className="flex gap-1">
+                    <button onClick={() => openEdit(member)} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400 dark:text-white/40 hover:text-primary-500 dark:hover:text-primary-400 transition-colors">
+                      <Edit2 size={14} />
+                    </button>
+                    <button onClick={() => handleDelete(member._id || member.id)} className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 text-slate-400 dark:text-white/40 hover:text-red-500 dark:hover:text-red-400 transition-colors">
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                )}
               </div>
 
               <h4 className="font-semibold text-slate-900 dark:text-white mb-1">{member.name}</h4>
@@ -127,12 +134,12 @@ export default function UserManagement() {
               <div className="mt-4 space-y-1.5">
                 {member.email && (
                   <div className="flex items-center gap-2 text-xs text-slate-400 dark:text-white/40">
-                    <Mail size={12} /><span className="truncate">{member.email}</span>
+                    <Mail aria-hidden="true" size={12} /><span className="truncate">{member.email}</span>
                   </div>
                 )}
                 {member.phone && (
                   <div className="flex items-center gap-2 text-xs text-slate-400 dark:text-white/40">
-                    <Phone size={12} /><span>{member.phone}</span>
+                    <Phone aria-hidden="true" size={12} /><span>{member.phone}</span>
                   </div>
                 )}
                 {!member.email && !member.phone && (
@@ -148,25 +155,25 @@ export default function UserManagement() {
       {familyMembers.length > 0 && (
         <div className="glass-card overflow-hidden">
           <div className="px-5 py-4 border-b border-slate-200 dark:border-white/10 flex items-center gap-2">
-            <UserCheck size={16} className="text-slate-400 dark:text-white/50" />
+            <UserCheck aria-hidden="true" size={16} className="text-slate-400 dark:text-white/50" />
             <h3 className="section-title">Members Overview</h3>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="border-b border-slate-200 dark:border-white/10">
                 <tr>
-                  <th onClick={() => toggle('name')} className="table-header text-left px-5 py-3 cursor-pointer select-none hover:text-slate-900 dark:hover:text-white transition-colors">
+                  <th scope="col" onClick={() => toggle('name')} aria-sort={sortKey === 'name' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'} className="table-header text-left px-5 py-3 cursor-pointer select-none hover:text-slate-900 dark:hover:text-white transition-colors">
                     <span className="flex items-center">Name <SortIcon col="name" sortKey={sortKey} sortDir={sortDir} /></span>
                   </th>
-                  <th onClick={() => toggle('relationship')} className="table-header text-left px-5 py-3 cursor-pointer select-none hover:text-slate-900 dark:hover:text-white transition-colors">
+                  <th scope="col" onClick={() => toggle('relationship')} aria-sort={sortKey === 'relationship' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'} className="table-header text-left px-5 py-3 cursor-pointer select-none hover:text-slate-900 dark:hover:text-white transition-colors">
                     <span className="flex items-center">Relationship <SortIcon col="relationship" sortKey={sortKey} sortDir={sortDir} /></span>
                   </th>
-                  <th onClick={() => toggle('age')} className="table-header text-left px-5 py-3 hidden sm:table-cell cursor-pointer select-none hover:text-slate-900 dark:hover:text-white transition-colors">
+                  <th scope="col" onClick={() => toggle('age')} aria-sort={sortKey === 'age' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'} className="table-header text-left px-5 py-3 hidden sm:table-cell cursor-pointer select-none hover:text-slate-900 dark:hover:text-white transition-colors">
                     <span className="flex items-center">Age <SortIcon col="age" sortKey={sortKey} sortDir={sortDir} /></span>
                   </th>
-                  <th className="table-header text-left px-5 py-3 hidden md:table-cell">Email</th>
-                  <th className="table-header text-left px-5 py-3 hidden lg:table-cell">Phone</th>
-                  <th className="table-header text-right px-5 py-3">Actions</th>
+                  <th scope="col" className="table-header text-left px-5 py-3 hidden md:table-cell">Email</th>
+                  <th scope="col" className="table-header text-left px-5 py-3 hidden lg:table-cell">Phone</th>
+                  {isAdmin && <th scope="col" className="table-header text-right px-5 py-3">Actions</th>}
                 </tr>
               </thead>
               <tbody>
@@ -184,12 +191,14 @@ export default function UserManagement() {
                     <td className="px-5 py-3.5 hidden sm:table-cell text-sm text-slate-500 dark:text-white/50">{member.age || '-'}</td>
                     <td className="px-5 py-3.5 hidden md:table-cell text-sm text-slate-500 dark:text-white/50">{member.email || '-'}</td>
                     <td className="px-5 py-3.5 hidden lg:table-cell text-sm text-slate-500 dark:text-white/50">{member.phone || '-'}</td>
-                    <td className="px-5 py-3.5 text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        <button onClick={() => openEdit(member)} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400 dark:text-white/40 hover:text-primary-500 dark:hover:text-primary-400 transition-colors"><Edit2 size={14} /></button>
-                        <button onClick={() => handleDelete(member._id || member.id)} className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 text-slate-400 dark:text-white/40 hover:text-red-500 dark:hover:text-red-400 transition-colors"><Trash2 size={14} /></button>
-                      </div>
-                    </td>
+                    {isAdmin && (
+                      <td className="px-5 py-3.5 text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <button onClick={() => openEdit(member)} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400 dark:text-white/40 hover:text-primary-500 dark:hover:text-primary-400 transition-colors"><Edit2 size={14} /></button>
+                          <button onClick={() => handleDelete(member._id || member.id)} className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 text-slate-400 dark:text-white/40 hover:text-red-500 dark:hover:text-red-400 transition-colors"><Trash2 size={14} /></button>
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>
@@ -202,30 +211,30 @@ export default function UserManagement() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
-              <label className="label">Full Name *</label>
-              <input type="text" className="input-field" placeholder="Enter name" value={form.name} onChange={setField('name')} required />
+              <label htmlFor="member-name" className="label">Full Name *</label>
+              <input id="member-name" type="text" className="input-field" placeholder="Enter name" value={form.name} onChange={setField('name')} required />
             </div>
             <div>
-              <label className="label">Relationship *</label>
-              <select className="select-field" value={form.relationship} onChange={setField('relationship')} required>
+              <label htmlFor="member-relationship" className="label">Relationship *</label>
+              <select id="member-relationship" className="select-field" value={form.relationship} onChange={setField('relationship')} required>
                 {RELATIONSHIPS.map(r => <option key={r} value={r}>{r}</option>)}
               </select>
             </div>
             <div>
-              <label className="label">Age</label>
-              <input type="number" className="input-field" placeholder="Age" min="0" max="120" value={form.age} onChange={setField('age')} />
+              <label htmlFor="member-age" className="label">Age</label>
+              <input id="member-age" type="number" className="input-field" placeholder="Age" min="0" max="120" value={form.age} onChange={setField('age')} />
             </div>
             <div className="col-span-2">
-              <label className="label">Email</label>
-              <input type="email" className="input-field" placeholder="email@example.com" value={form.email} onChange={setField('email')} />
+              <label htmlFor="member-email" className="label">Email</label>
+              <input id="member-email" type="email" className="input-field" placeholder="email@example.com" value={form.email} onChange={setField('email')} />
             </div>
             <div className="col-span-2">
-              <label className="label">Phone</label>
-              <input type="tel" className="input-field" placeholder="+91 98765 43210" value={form.phone} onChange={setField('phone')} />
+              <label htmlFor="member-phone" className="label">Phone</label>
+              <input id="member-phone" type="tel" className="input-field" placeholder="+91 98765 43210" value={form.phone} onChange={setField('phone')} />
             </div>
             <div className="col-span-2">
-              <label className="label">Occupation</label>
-              <input type="text" className="input-field" placeholder="e.g. Engineer, Student, Retired" value={form.occupation} onChange={setField('occupation')} />
+              <label htmlFor="member-occupation" className="label">Occupation</label>
+              <input id="member-occupation" type="text" className="input-field" placeholder="e.g. Engineer, Student, Retired" value={form.occupation} onChange={setField('occupation')} />
             </div>
           </div>
           <div className="flex gap-3 pt-2">

@@ -112,7 +112,7 @@ export default function ProfitPage() {
           <div key={label} className="glass-card p-5">
             <div className="flex items-center justify-between mb-3">
               <p className="text-sm text-slate-500 dark:text-white/60">{label}</p>
-              <Icon size={16} className={good ? 'text-emerald-400' : 'text-yellow-400'} />
+              <Icon aria-hidden="true" size={16} className={good ? 'text-emerald-400' : 'text-yellow-400'} />
             </div>
             <p className={`text-3xl font-bold ${good ? 'text-emerald-400' : 'text-yellow-400'}`}>{value.toFixed(1)}%</p>
             <div className="mt-3 bg-slate-200 dark:bg-white/10 rounded-full h-1.5">
@@ -130,8 +130,9 @@ export default function ProfitPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="glass-card p-5">
           <h3 className="section-title mb-4">Monthly Profit Trend</h3>
+          <div role="img" aria-label="Bar chart showing monthly profit trend over the year">
           <ResponsiveContainer width="100%" height={250}>
-            <BarChart data={monthlyTrend} margin={{ top: 5, right: 10, bottom: 0, left: 0 }}>
+            <BarChart aria-hidden="true" data={monthlyTrend} margin={{ top: 5, right: 10, bottom: 0, left: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
               <XAxis dataKey="month" tick={{ fill: tickColor, fontSize: 11 }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fill: tickColor, fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={v => formatCurrencyCompact(v)} />
@@ -145,12 +146,14 @@ export default function ProfitPage() {
               <Bar dataKey="Profit" fill="#6366f1" radius={[4,4,0,0]} />
             </BarChart>
           </ResponsiveContainer>
+          </div>
         </div>
 
         <div className="glass-card p-5">
           <h3 className="section-title mb-4">Cumulative Profit</h3>
+          <div role="img" aria-label="Area chart showing cumulative profit running total over the year">
           <ResponsiveContainer width="100%" height={250}>
-            <AreaChart data={cumulativeProfit} margin={{ top: 5, right: 10, bottom: 0, left: 0 }}>
+            <AreaChart aria-hidden="true" data={cumulativeProfit} margin={{ top: 5, right: 10, bottom: 0, left: 0 }}>
               <defs>
                 <linearGradient id="cumGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#6366f1" stopOpacity={0.4} />
@@ -165,14 +168,16 @@ export default function ProfitPage() {
               <Area type="monotone" dataKey="cumulative" name="Cumulative" stroke="#6366f1" strokeWidth={2} fill="url(#cumGrad)" />
             </AreaChart>
           </ResponsiveContainer>
+          </div>
         </div>
       </div>
 
       {/* Full income vs expenses bar */}
       <div className="glass-card p-5">
         <h3 className="section-title mb-4">Income, Expenses & Investment Overview</h3>
+        <div role="img" aria-label="Bar chart comparing monthly income, expenses, and investments">
         <ResponsiveContainer width="100%" height={220}>
-          <BarChart data={monthlyTrend} margin={{ top: 5, right: 10, bottom: 0, left: 0 }}>
+          <BarChart aria-hidden="true" data={monthlyTrend} margin={{ top: 5, right: 10, bottom: 0, left: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
             <XAxis dataKey="month" tick={{ fill: tickColor, fontSize: 11 }} axisLine={false} tickLine={false} />
             <YAxis tick={{ fill: tickColor, fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={v => formatCurrencyCompact(v)} />
@@ -183,6 +188,7 @@ export default function ProfitPage() {
             <Bar dataKey="Invested" fill="#3b82f6" radius={[4,4,0,0]} />
           </BarChart>
         </ResponsiveContainer>
+        </div>
       </div>
     </div>
   );

@@ -9,7 +9,7 @@ const userSchema = new mongoose.Schema({
     enum: ['Father', 'Mother', 'Son', 'Daughter', 'Spouse', 'Grandfather', 'Grandmother', 'Other'],
     default: 'Father'
   },
-  role: { type: String, enum: ['admin', 'member'], default: 'admin' },
+  role: { type: String, enum: ['admin', 'user', 'manager'], default: 'admin' },
   avatar: { type: String, default: '' },
   phone: { type: String, default: '' }
 }, { timestamps: true });

@@ -95,8 +95,9 @@ export default function Dashboard() {
         {/* Area chart */}
         <div className="lg:col-span-2 glass-card p-5">
           <h3 className="section-title mb-4">Income vs Expenses (Monthly)</h3>
+          <div role="img" aria-label="Area chart showing monthly income vs expenses trend">
           <ResponsiveContainer width="100%" height={240}>
-            <AreaChart data={monthlyData} margin={{ top: 5, right: 10, bottom: 0, left: 0 }}>
+            <AreaChart aria-hidden="true" data={monthlyData} margin={{ top: 5, right: 10, bottom: 0, left: 0 }}>
               <defs>
                 <linearGradient id="incomeGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
@@ -115,6 +116,7 @@ export default function Dashboard() {
               <Area type="monotone" dataKey="Expenses" stroke="#ef4444" strokeWidth={2} fill="url(#expenseGrad)" />
             </AreaChart>
           </ResponsiveContainer>
+          </div>
         </div>
 
         {/* Category Pie */}
@@ -122,8 +124,9 @@ export default function Dashboard() {
           <h3 className="section-title mb-4">Expense Categories</h3>
           {categoryData.length > 0 ? (
             <>
+              <div role="img" aria-label="Pie chart showing expense distribution by category">
               <ResponsiveContainer width="100%" height={160}>
-                <PieChart>
+                <PieChart aria-hidden="true">
                   <Pie data={categoryData} cx="50%" cy="50%" innerRadius={45} outerRadius={70}
                     dataKey="value" paddingAngle={3}>
                     {categoryData.map((entry) => (
@@ -133,6 +136,7 @@ export default function Dashboard() {
                   <Tooltip formatter={(val) => formatCurrency(val)} />
                 </PieChart>
               </ResponsiveContainer>
+              </div>
               <div className="space-y-2 mt-3">
                 {categoryData.map(item => (
                   <div key={item.name} className="flex items-center justify-between text-xs">
@@ -156,8 +160,9 @@ export default function Dashboard() {
         {/* Bar chart */}
         <div className="lg:col-span-2 glass-card p-5">
           <h3 className="section-title mb-4">Monthly Profit Overview</h3>
+          <div role="img" aria-label="Bar chart showing monthly income, expenses, and profit overview">
           <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={monthlyData} margin={{ top: 5, right: 10, bottom: 0, left: 0 }}>
+            <BarChart aria-hidden="true" data={monthlyData} margin={{ top: 5, right: 10, bottom: 0, left: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
               <XAxis dataKey="month" tick={{ fill: tickColor, fontSize: 11 }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fill: tickColor, fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={v => formatCurrencyCompact(v)} />
@@ -168,6 +173,7 @@ export default function Dashboard() {
               <Legend formatter={(val) => <span className="text-slate-500 dark:text-white/60 text-xs">{val}</span>} />
             </BarChart>
           </ResponsiveContainer>
+          </div>
         </div>
 
         {/* Income by type */}
@@ -175,8 +181,9 @@ export default function Dashboard() {
           <h3 className="section-title mb-4">Income Sources</h3>
           {incomeByType.length > 0 ? (
             <>
+              <div role="img" aria-label="Pie chart showing income distribution by source type">
               <ResponsiveContainer width="100%" height={160}>
-                <PieChart>
+                <PieChart aria-hidden="true">
                   <Pie data={incomeByType} cx="50%" cy="50%" innerRadius={45} outerRadius={70}
                     dataKey="value" paddingAngle={3}>
                     {incomeByType.map((entry) => (
@@ -186,6 +193,7 @@ export default function Dashboard() {
                   <Tooltip formatter={(val) => formatCurrency(val)} />
                 </PieChart>
               </ResponsiveContainer>
+              </div>
               <div className="space-y-2 mt-3">
                 {incomeByType.map(item => (
                   <div key={item.name} className="flex items-center justify-between text-xs">
@@ -212,11 +220,11 @@ export default function Dashboard() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-slate-200 dark:border-white/10">
-                  <th className="table-header text-left pb-3">Type</th>
-                  <th className="table-header text-left pb-3 hidden sm:table-cell">Category / Source</th>
-                  <th className="table-header text-left pb-3 hidden md:table-cell">Member</th>
-                  <th className="table-header text-left pb-3 hidden lg:table-cell">Date</th>
-                  <th className="table-header text-right pb-3">Amount</th>
+                  <th scope="col" className="table-header text-left pb-3">Type</th>
+                  <th scope="col" className="table-header text-left pb-3 hidden sm:table-cell">Category / Source</th>
+                  <th scope="col" className="table-header text-left pb-3 hidden md:table-cell">Member</th>
+                  <th scope="col" className="table-header text-left pb-3 hidden lg:table-cell">Date</th>
+                  <th scope="col" className="table-header text-right pb-3">Amount</th>
                 </tr>
               </thead>
               <tbody>
@@ -224,7 +232,7 @@ export default function Dashboard() {
                   <tr key={tx._id || tx.id} className="table-row">
                     <td className="py-3 pr-4">
                       <div className="flex items-center gap-2">
-                        <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${tx._type === 'income' ? 'bg-income' : 'bg-expense'}`}>
+                        <div aria-hidden="true" className={`w-7 h-7 rounded-lg flex items-center justify-center ${tx._type === 'income' ? 'bg-income' : 'bg-expense'}`}>
                           {tx._type === 'income'
                             ? <ArrowUpRight size={14} className="text-income" />
                             : <ArrowDownRight size={14} className="text-expense" />}

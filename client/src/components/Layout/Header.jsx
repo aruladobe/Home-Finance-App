@@ -31,9 +31,10 @@ export default function Header({ onMenuClick }) {
     <header className="sticky top-0 z-10 h-16 bg-slate-50/90 dark:bg-dark-950/80 backdrop-blur-xl border-b border-slate-200 dark:border-white/10 flex items-center px-4 lg:px-6 gap-4">
       <button
         onClick={onMenuClick}
+        aria-label="Toggle navigation menu"
         className="lg:hidden p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-white/10 text-slate-500 dark:text-white/60 hover:text-slate-900 dark:hover:text-white transition-colors"
       >
-        <Menu size={20} />
+        <Menu size={20} aria-hidden="true" />
       </button>
 
       <div className="flex-1">
@@ -43,8 +44,10 @@ export default function Header({ onMenuClick }) {
       <div className="flex items-center gap-2">
         {/* Financial Year filter */}
         <div className="hidden sm:flex items-center gap-1.5 glass-card px-2 py-1">
-          <CalendarDays size={13} className={financialYear ? 'text-primary-400' : 'text-slate-400 dark:text-white/30'} />
+          <CalendarDays size={13} aria-hidden="true" className={financialYear ? 'text-primary-400' : 'text-slate-400 dark:text-white/30'} />
+          <label htmlFor="fy-filter" className="sr-only">Filter by financial year</label>
           <select
+            id="fy-filter"
             value={financialYear || ''}
             onChange={e => setFinancialYear(e.target.value || null)}
             className={`bg-transparent text-xs font-medium border-none outline-none cursor-pointer pr-1 transition-colors ${
@@ -59,11 +62,16 @@ export default function Header({ onMenuClick }) {
         </div>
 
         {/* Period filter — disabled when FY is active */}
-        <div className={`hidden sm:flex items-center gap-1 glass-card p-1 transition-opacity ${financialYear ? 'opacity-30 pointer-events-none' : ''}`}>
+        <div
+          role="group"
+          aria-label="Filter by period"
+          className={`hidden sm:flex items-center gap-1 glass-card p-1 transition-opacity ${financialYear ? 'opacity-30 pointer-events-none' : ''}`}
+        >
           {['daily', 'monthly', 'yearly'].map(p => (
             <button
               key={p}
               onClick={() => setPeriod(p)}
+              aria-pressed={period === p}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-all duration-200 ${
                 period === p
                   ? 'bg-primary-600 text-white shadow-lg shadow-primary-900/30'
@@ -77,31 +85,35 @@ export default function Header({ onMenuClick }) {
 
         <button
           onClick={() => setStatementOpen(true)}
+          aria-label="Download statement"
           className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-white/10 text-slate-500 dark:text-white/60 hover:text-slate-900 dark:hover:text-white transition-colors"
-          title="Download Statement"
         >
-          <Download size={17} />
+          <Download size={17} aria-hidden="true" />
         </button>
 
         <button
           onClick={fetchAll}
+          aria-label={loading ? 'Refreshing data…' : 'Refresh data'}
+          aria-busy={loading}
           className={`p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-white/10 text-slate-500 dark:text-white/60 hover:text-slate-900 dark:hover:text-white transition-all duration-200 ${loading ? 'animate-spin text-primary-400' : ''}`}
-          title="Refresh data"
         >
-          <RefreshCw size={17} />
+          <RefreshCw size={17} aria-hidden="true" />
         </button>
 
         <button
           onClick={toggleTheme}
+          aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
           className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-white/10 text-slate-500 dark:text-white/60 hover:text-slate-900 dark:hover:text-white transition-colors"
-          title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
         >
-          {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
+          {theme === 'dark' ? <Sun size={17} aria-hidden="true" /> : <Moon size={17} aria-hidden="true" />}
         </button>
 
-        <button className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-white/10 text-slate-500 dark:text-white/60 hover:text-slate-900 dark:hover:text-white transition-colors relative">
-          <Bell size={17} />
-          <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-primary-500 rounded-full" />
+        <button
+          aria-label="Notifications"
+          className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-white/10 text-slate-500 dark:text-white/60 hover:text-slate-900 dark:hover:text-white transition-colors relative"
+        >
+          <Bell size={17} aria-hidden="true" />
+          <span aria-hidden="true" className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-primary-500 rounded-full" />
         </button>
       </div>
 

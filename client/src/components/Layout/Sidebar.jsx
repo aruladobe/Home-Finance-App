@@ -26,7 +26,7 @@ export default function Sidebar({ isOpen, onClose }) {
   return (
     <>
       {isOpen && (
-        <div className="fixed inset-0 bg-black/20 dark:bg-black/60 z-20 lg:hidden" onClick={onClose} />
+        <div aria-hidden="true" className="fixed inset-0 bg-black/20 dark:bg-black/60 z-20 lg:hidden" onClick={onClose} />
       )}
       <aside className={`
         fixed left-0 top-0 h-full w-64 z-30
@@ -36,7 +36,7 @@ export default function Sidebar({ isOpen, onClose }) {
       `}>
         {/* Logo */}
         <div className="flex items-center gap-3 px-6 py-5 border-b border-slate-200 dark:border-white/10">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-500 to-purple-600 flex items-center justify-center shadow-lg">
+          <div aria-hidden="true" className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-500 to-purple-600 flex items-center justify-center shadow-lg">
             <Home size={18} className="text-white" />
           </div>
           <div>
@@ -59,7 +59,7 @@ export default function Sidebar({ isOpen, onClose }) {
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+        <nav aria-label="Main navigation" className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
           <p className="text-xs font-semibold text-slate-400 dark:text-white/30 uppercase tracking-wider px-3 mb-3">Menu</p>
           {navItems.map(({ path, icon: Icon, label }) => (
             <NavLink
@@ -77,7 +77,7 @@ export default function Sidebar({ isOpen, onClose }) {
             >
               {({ isActive }) => (
                 <>
-                  <span className={`flex-shrink-0 ${isActive ? 'text-primary-500 dark:text-primary-400' : 'text-slate-400 dark:text-white/40 group-hover:text-slate-600 dark:group-hover:text-white/70'}`}>
+                  <span aria-hidden="true" className={`flex-shrink-0 ${isActive ? 'text-primary-500 dark:text-primary-400' : 'text-slate-400 dark:text-white/40 group-hover:text-slate-600 dark:group-hover:text-white/70'}`}>
                     <Icon size={18} />
                   </span>
                   {label}
@@ -95,7 +95,7 @@ export default function Sidebar({ isOpen, onClose }) {
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium
                        text-red-500/80 dark:text-red-400/80 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all duration-200"
           >
-            <LogOut size={18} />
+            <LogOut aria-hidden="true" size={18} />
             Sign Out
           </button>
         </div>

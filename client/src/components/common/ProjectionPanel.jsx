@@ -21,7 +21,7 @@ export default function ProjectionPanel({ amount, period, effectiveFrom, effecti
     <div className={`rounded-xl border p-4 space-y-3 ${st.bg}`}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-white/70">
-          <CalendarClock size={14} />
+          <CalendarClock aria-hidden="true" size={14} />
           Projection
         </div>
         <span className={`badge text-xs font-medium ${st.color} bg-slate-100 dark:bg-white/5`}>{st.label}</span>

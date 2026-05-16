@@ -161,26 +161,34 @@ export default function ExpensesPage() {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Tab switcher */}
-      <div className="flex gap-2">
+      <div role="tablist" aria-label="Expense tabs" className="flex gap-2">
         <button
+          role="tab"
+          aria-selected={tab === 'actual'}
+          aria-controls="panel-actual"
+          id="tab-actual"
           onClick={() => setTab('actual')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${tab === 'actual' ? 'bg-primary-500 text-white' : 'bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-white/50 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10'}`}
         >
           Actual Expenses
         </button>
         <button
+          role="tab"
+          aria-selected={tab === 'planned'}
+          aria-controls="panel-planned"
+          id="tab-planned"
           onClick={() => setTab('planned')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${tab === 'planned' ? 'bg-primary-500 text-white' : 'bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-white/50 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10'}`}
         >
           Planned Expenses
           {dueCount > 0 && (
-            <span className="px-1.5 py-0.5 rounded-full text-xs bg-red-500 text-white">{dueCount}</span>
+            <span aria-label={`${dueCount} due`} className="px-1.5 py-0.5 rounded-full text-xs bg-red-500 text-white">{dueCount}</span>
           )}
         </button>
       </div>
 
       {tab === 'actual' && (
-        <>
+        <div id="panel-actual" role="tabpanel" aria-labelledby="tab-actual">
           {/* Stats */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <StatCard title="Total Expenses" value={formatCurrency(total)} icon={TrendingDown} color="expense" subtitle={`${filtered.length} entries`} />
@@ -195,14 +203,16 @@ export default function ExpensesPage() {
               <h3 className="section-title mb-4">By Category</h3>
               {categoryData.length > 0 ? (
                 <>
+                  <div role="img" aria-label="Pie chart showing expense distribution by category">
                   <ResponsiveContainer width="100%" height={160}>
-                    <PieChart>
+                    <PieChart aria-hidden="true">
                       <Pie data={categoryData} cx="50%" cy="50%" innerRadius={40} outerRadius={65} dataKey="value" paddingAngle={3}>
                         {categoryData.map(entry => <Cell key={entry.name} fill={CATEGORY_COLORS[entry.name] || '#6366f1'} />)}
                       </Pie>
                       <Tooltip formatter={val => formatCurrency(val)} contentStyle={tooltipStyle} />
                     </PieChart>
                   </ResponsiveContainer>
+                  </div>
                   <div className="space-y-1.5 mt-3 max-h-48 overflow-y-auto">
                     {[...categoryData].sort((a,b) => b.value - a.value).map(item => (
                       <div key={item.name} className="flex items-center justify-between text-xs">
@@ -224,32 +234,33 @@ export default function ExpensesPage() {
             <div className="lg:col-span-2 glass-card overflow-hidden">
               <div className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-white/10">
                 <div className="flex items-center gap-2">
-                  <Filter size={15} className="text-slate-400 dark:text-white/40" />
-                  <select className="select-field w-auto text-sm py-2" value={filterCat} onChange={e => setFilterCat(e.target.value)}>
+                  <Filter size={15} aria-hidden="true" className="text-slate-400 dark:text-white/40" />
+                  <label htmlFor="expense-filter-cat" className="sr-only">Filter by category</label>
+                  <select id="expense-filter-cat" className="select-field w-auto text-sm py-2" value={filterCat} onChange={e => setFilterCat(e.target.value)}>
                     <option value="">All Categories</option>
                     {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
                 <button onClick={openAdd} className="btn-primary flex items-center gap-2 text-sm">
-                  <Plus size={16} /> Add Expense
+                  <Plus aria-hidden="true" size={16} /> Add Expense
                 </button>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead className="border-b border-slate-200 dark:border-white/10">
                     <tr>
-                      <th onClick={() => toggle('category')} className="table-header text-left px-5 py-3 cursor-pointer select-none hover:text-slate-900 dark:hover:text-white transition-colors">
+                      <th scope="col" onClick={() => toggle('category')} aria-sort={sortKey === 'category' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'} className="table-header text-left px-5 py-3 cursor-pointer select-none hover:text-slate-900 dark:hover:text-white transition-colors">
                         <span className="flex items-center">Category <SortIcon col="category" sortKey={sortKey} sortDir={sortDir} /></span>
                       </th>
-                      <th onClick={() => toggle('familyMemberName')} className="table-header text-left px-5 py-3 hidden sm:table-cell cursor-pointer select-none hover:text-slate-900 dark:hover:text-white transition-colors">
+                      <th scope="col" onClick={() => toggle('familyMemberName')} aria-sort={sortKey === 'familyMemberName' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'} className="table-header text-left px-5 py-3 hidden sm:table-cell cursor-pointer select-none hover:text-slate-900 dark:hover:text-white transition-colors">
                         <span className="flex items-center">Member <SortIcon col="familyMemberName" sortKey={sortKey} sortDir={sortDir} /></span>
                       </th>
-                      <th className="table-header text-left px-5 py-3 hidden md:table-cell">Effective Range</th>
-                      <th onClick={() => toggle('amount')} className="table-header text-right px-5 py-3 cursor-pointer select-none hover:text-slate-900 dark:hover:text-white transition-colors">
+                      <th scope="col" className="table-header text-left px-5 py-3 hidden md:table-cell">Effective Range</th>
+                      <th scope="col" onClick={() => toggle('amount')} aria-sort={sortKey === 'amount' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'} className="table-header text-right px-5 py-3 cursor-pointer select-none hover:text-slate-900 dark:hover:text-white transition-colors">
                         <span className="flex items-center justify-end">Amount <SortIcon col="amount" sortKey={sortKey} sortDir={sortDir} /></span>
                       </th>
-                      <th className="table-header text-right px-5 py-3 hidden lg:table-cell">Remaining</th>
-                      <th className="table-header text-right px-5 py-3">Actions</th>
+                      <th scope="col" className="table-header text-right px-5 py-3 hidden lg:table-cell">Remaining</th>
+                      <th scope="col" className="table-header text-right px-5 py-3">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -271,7 +282,7 @@ export default function ExpensesPage() {
                           <td className="px-5 py-3 hidden md:table-cell">
                             {item.effectiveFrom ? (
                               <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-white/50">
-                                <CalendarRange size={12} className="text-red-400 flex-shrink-0" />
+                                <CalendarRange aria-hidden="true" size={12} className="text-red-400 flex-shrink-0" />
                                 {format(new Date(item.effectiveFrom), 'dd MMM yy')}
                                 {item.effectiveTo && <> → {format(new Date(item.effectiveTo), 'dd MMM yy')}</>}
                                 {!item.effectiveTo && <span className="text-purple-400">→ ongoing</span>}
@@ -300,11 +311,11 @@ export default function ExpensesPage() {
               </div>
             </div>
           </div>
-        </>
+        </div>
       )}
 
       {tab === 'planned' && (
-        <>
+        <div id="panel-planned" role="tabpanel" aria-labelledby="tab-planned">
           {/* Planned stats */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <StatCard title="Total Planned" value={formatCurrency(plannedTotal)} icon={Calendar} color="expense" subtitle={`${plannedExpenses.length} planned`} />
@@ -347,20 +358,20 @@ export default function ExpensesPage() {
             <div className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-white/10">
               <h3 className="section-title">Planned Expenses</h3>
               <button onClick={openAddPlanned} className="btn-primary flex items-center gap-2 text-sm">
-                <Plus size={16} /> Add Planned
+                <Plus aria-hidden="true" size={16} /> Add Planned
               </button>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="border-b border-slate-200 dark:border-white/10">
                   <tr>
-                    <th className="table-header text-left px-5 py-3">Category</th>
-                    <th className="table-header text-left px-5 py-3 hidden sm:table-cell">Member</th>
-                    <th className="table-header text-left px-5 py-3">Effective Date</th>
-                    <th className="table-header text-left px-5 py-3 hidden md:table-cell">Status</th>
-                    <th className="table-header text-left px-5 py-3 hidden lg:table-cell">Notes</th>
-                    <th className="table-header text-right px-5 py-3">Amount</th>
-                    <th className="table-header text-right px-5 py-3">Actions</th>
+                    <th scope="col" className="table-header text-left px-5 py-3">Category</th>
+                    <th scope="col" className="table-header text-left px-5 py-3 hidden sm:table-cell">Member</th>
+                    <th scope="col" className="table-header text-left px-5 py-3">Effective Date</th>
+                    <th scope="col" className="table-header text-left px-5 py-3 hidden md:table-cell">Status</th>
+                    <th scope="col" className="table-header text-left px-5 py-3 hidden lg:table-cell">Notes</th>
+                    <th scope="col" className="table-header text-right px-5 py-3">Amount</th>
+                    <th scope="col" className="table-header text-right px-5 py-3">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -388,10 +399,10 @@ export default function ExpensesPage() {
                           <div className="flex items-center justify-end gap-1">
                             <button
                               onClick={() => openMoveModal(item)}
-                              title="Mark as done — move to Expenses"
+                              aria-label="Mark as done — move to actual expenses"
                               className="p-1.5 rounded-lg hover:bg-green-50 dark:hover:bg-green-500/10 text-slate-400 dark:text-white/40 hover:text-green-500 dark:hover:text-green-400 transition-colors"
                             >
-                              <ArrowRight size={14} />
+                              <ArrowRight aria-hidden="true" size={14} />
                             </button>
                             <button onClick={() => openEditPlanned(item)} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400 dark:text-white/40 hover:text-primary-500 dark:hover:text-primary-400 transition-colors"><Edit2 size={14} /></button>
                             <button onClick={() => handleDeletePlanned(item._id || item.id)} className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 text-slate-400 dark:text-white/40 hover:text-red-500 dark:hover:text-red-400 transition-colors"><Trash2 size={14} /></button>
@@ -404,7 +415,7 @@ export default function ExpensesPage() {
               </table>
             </div>
           </div>
-        </>
+        </div>
       )}
 
       {/* Actual expense modal */}
@@ -412,54 +423,54 @@ export default function ExpensesPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="label">Category *</label>
-              <select className="select-field" value={form.category} onChange={setField('category')} required>
+              <label htmlFor="expense-category" className="label">Category *</label>
+              <select id="expense-category" className="select-field" value={form.category} onChange={setField('category')} required>
                 {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
             <div>
-              <label className="label">Amount (₹) *</label>
-              <input type="number" className="input-field" placeholder="0.00" min="0" step="0.01" value={form.amount} onChange={setField('amount')} required />
+              <label htmlFor="expense-amount" className="label">Amount (₹) *</label>
+              <input id="expense-amount" type="number" className="input-field" placeholder="0.00" min="0" step="0.01" value={form.amount} onChange={setField('amount')} required />
             </div>
             <div>
-              <label className="label">Transaction Date *</label>
-              <input type="date" className="input-field" value={form.date} onChange={setField('date')} required />
+              <label htmlFor="expense-date" className="label">Transaction Date *</label>
+              <input id="expense-date" type="date" className="input-field" value={form.date} onChange={setField('date')} required />
             </div>
             <div>
-              <label className="label">Period</label>
-              <select className="select-field" value={form.period} onChange={setField('period')}>
+              <label htmlFor="expense-period" className="label">Period</label>
+              <select id="expense-period" className="select-field" value={form.period} onChange={setField('period')}>
                 {PERIODS.map(p => <option key={p} value={p} className="capitalize">{p}</option>)}
               </select>
             </div>
 
             <div className="col-span-2">
               <div className="flex items-center gap-2 mb-2">
-                <CalendarRange size={14} className="text-red-400" />
+                <CalendarRange size={14} aria-hidden="true" className="text-red-400" />
                 <span className="text-sm font-medium text-slate-600 dark:text-white/70">Effective Date Range</span>
                 <span className="text-xs text-slate-400 dark:text-white/30">(for projection)</span>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="label">From *</label>
-                  <input type="date" className="input-field" value={form.effectiveFrom} onChange={setField('effectiveFrom')} required />
+                  <label htmlFor="expense-effective-from" className="label">From *</label>
+                  <input id="expense-effective-from" type="date" className="input-field" value={form.effectiveFrom} onChange={setField('effectiveFrom')} required />
                 </div>
                 <div>
-                  <label className="label">To <span className="text-slate-400 dark:text-white/30">(blank = ongoing)</span></label>
-                  <input type="date" className="input-field" value={form.effectiveTo} min={form.effectiveFrom || undefined} onChange={setField('effectiveTo')} />
+                  <label htmlFor="expense-effective-to" className="label">To <span className="text-slate-400 dark:text-white/30">(blank = ongoing)</span></label>
+                  <input id="expense-effective-to" type="date" className="input-field" value={form.effectiveTo} min={form.effectiveFrom || undefined} onChange={setField('effectiveTo')} />
                 </div>
               </div>
             </div>
 
             <div className="col-span-2">
-              <label className="label">Family Member</label>
-              <select className="select-field" value={form.familyMemberId} onChange={setField('familyMemberId')}>
+              <label htmlFor="expense-member" className="label">Family Member</label>
+              <select id="expense-member" className="select-field" value={form.familyMemberId} onChange={setField('familyMemberId')}>
                 <option value="">Self / All Family</option>
                 {familyMembers.map(m => <option key={m._id || m.id} value={m._id || m.id}>{m.name} ({m.relationship})</option>)}
               </select>
             </div>
             <div className="col-span-2">
-              <label className="label">Description</label>
-              <input type="text" className="input-field" placeholder="What was this expense for?" value={form.description} onChange={setField('description')} />
+              <label htmlFor="expense-description" className="label">Description</label>
+              <input id="expense-description" type="text" className="input-field" placeholder="What was this expense for?" value={form.description} onChange={setField('description')} />
             </div>
           </div>
 
@@ -487,39 +498,39 @@ export default function ExpensesPage() {
         <form onSubmit={handlePlannedSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="label">Category *</label>
-              <select className="select-field" value={plannedForm.category} onChange={setPlannedField('category')} required>
+              <label htmlFor="planned-category" className="label">Category *</label>
+              <select id="planned-category" className="select-field" value={plannedForm.category} onChange={setPlannedField('category')} required>
                 {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
             <div>
-              <label className="label">Amount *</label>
-              <input type="number" className="input-field" placeholder="0.00" min="0" step="0.01" value={plannedForm.amount} onChange={setPlannedField('amount')} required />
+              <label htmlFor="planned-amount" className="label">Amount *</label>
+              <input id="planned-amount" type="number" className="input-field" placeholder="0.00" min="0" step="0.01" value={plannedForm.amount} onChange={setPlannedField('amount')} required />
             </div>
             <div>
-              <label className="label">Effective Date *</label>
-              <input type="date" className="input-field" value={plannedForm.effectiveDate} onChange={setPlannedField('effectiveDate')} required />
+              <label htmlFor="planned-effective-date" className="label">Effective Date *</label>
+              <input id="planned-effective-date" type="date" className="input-field" value={plannedForm.effectiveDate} onChange={setPlannedField('effectiveDate')} required />
             </div>
             <div>
-              <label className="label">Period</label>
-              <select className="select-field" value={plannedForm.period} onChange={setPlannedField('period')}>
+              <label htmlFor="planned-period" className="label">Period</label>
+              <select id="planned-period" className="select-field" value={plannedForm.period} onChange={setPlannedField('period')}>
                 {PERIODS.map(p => <option key={p} value={p} className="capitalize">{p}</option>)}
               </select>
             </div>
             <div className="col-span-2">
-              <label className="label">Family Member</label>
-              <select className="select-field" value={plannedForm.familyMemberId} onChange={setPlannedField('familyMemberId')}>
+              <label htmlFor="planned-member" className="label">Family Member</label>
+              <select id="planned-member" className="select-field" value={plannedForm.familyMemberId} onChange={setPlannedField('familyMemberId')}>
                 <option value="">Self / All Family</option>
                 {familyMembers.map(m => <option key={m._id || m.id} value={m._id || m.id}>{m.name} ({m.relationship})</option>)}
               </select>
             </div>
             <div className="col-span-2">
-              <label className="label">Description</label>
-              <input type="text" className="input-field" placeholder="What is this expense for?" value={plannedForm.description} onChange={setPlannedField('description')} />
+              <label htmlFor="planned-description" className="label">Description</label>
+              <input id="planned-description" type="text" className="input-field" placeholder="What is this expense for?" value={plannedForm.description} onChange={setPlannedField('description')} />
             </div>
             <div className="col-span-2">
-              <label className="label">Notes</label>
-              <input type="text" className="input-field" placeholder="Any additional notes..." value={plannedForm.notes} onChange={setPlannedField('notes')} />
+              <label htmlFor="planned-notes" className="label">Notes</label>
+              <input id="planned-notes" type="text" className="input-field" placeholder="Any additional notes..." value={plannedForm.notes} onChange={setPlannedField('notes')} />
             </div>
           </div>
           <div className="flex gap-3 pt-2">
@@ -545,8 +556,8 @@ export default function ExpensesPage() {
             </div>
           )}
           <div>
-            <label className="label">Actual Expense Date *</label>
-            <input type="date" className="input-field" value={moveDate} onChange={e => setMoveDate(e.target.value)} required />
+            <label htmlFor="move-expense-date" className="label">Actual Expense Date *</label>
+            <input id="move-expense-date" type="date" className="input-field" value={moveDate} onChange={e => setMoveDate(e.target.value)} required />
           </div>
           <p className="text-xs text-slate-400 dark:text-white/40">This will remove the item from Planned Expenses and add it to your Actual Expenses.</p>
           <div className="flex gap-3 pt-1">
@@ -554,7 +565,7 @@ export default function ExpensesPage() {
             <button onClick={handleMove} disabled={moving || !moveDate} className="btn-primary flex-1 flex items-center justify-center gap-2">
               {moving
                 ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                : <><ArrowRight size={16} /> Mark as Done</>}
+                : <><ArrowRight aria-hidden="true" size={16} /> Mark as Done</>}
             </button>
           </div>
         </div>

@@ -32,12 +32,12 @@ export default function StatCard({ title, value, icon: Icon, color, trend, trend
   return (
     <div className={`glass-card p-5 bg-gradient-to-br ${gradient} hover:scale-[1.02] transition-all duration-300`}>
       <div className="flex items-start justify-between mb-3">
-        <div className={`w-10 h-10 ${iconBg} rounded-xl flex items-center justify-center`}>
+        <div aria-hidden="true" className={`w-10 h-10 ${iconBg} rounded-xl flex items-center justify-center`}>
           <Icon size={20} className={iconColor} />
         </div>
         {trend !== undefined && (
           <div className={`flex items-center gap-1 text-xs font-medium ${trend >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
-            {trend >= 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+            {trend >= 0 ? <TrendingUp aria-hidden="true" size={14} /> : <TrendingDown aria-hidden="true" size={14} />}
             {Math.abs(trendValue || trend)}%
           </div>
         )}

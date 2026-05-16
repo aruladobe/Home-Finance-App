@@ -7,12 +7,12 @@ const auth = require('../middleware/auth');
 
 router.post('/signup', async (req, res) => {
   try {
-    const { name, email, password, relationship, phone } = req.body;
+    const { name, email, password, relationship, phone, role } = req.body;
     const exists = await User.findOne({ email });
     if (exists) return res.status(400).json({ message: 'User already exists' });
 
     const hashed = await bcrypt.hash(password, 12);
-    const user = new User({ name, email, password: hashed, relationship, phone });
+    const user = new User({ name, email, password: hashed, relationship, phone, role });
     await user.save();
 
     const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '7d' });

@@ -101,14 +101,15 @@ export default function IncomePage() {
       {/* Controls */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <Filter size={16} className="text-slate-400 dark:text-white/40" />
-          <select className="select-field w-auto text-sm py-2" value={filterType} onChange={e => setFilterType(e.target.value)}>
+          <Filter size={16} aria-hidden="true" className="text-slate-400 dark:text-white/40" />
+          <label htmlFor="income-filter-type" className="sr-only">Filter by income type</label>
+          <select id="income-filter-type" className="select-field w-auto text-sm py-2" value={filterType} onChange={e => setFilterType(e.target.value)}>
             <option value="">All Types</option>
             {INCOME_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
           </select>
         </div>
         <button onClick={openAdd} className="btn-primary flex items-center gap-2 text-sm">
-          <Plus size={16} /> Add Income
+          <Plus aria-hidden="true" size={16} /> Add Income
         </button>
       </div>
 
@@ -118,21 +119,21 @@ export default function IncomePage() {
           <table className="w-full">
             <thead className="border-b border-slate-200 dark:border-white/10">
               <tr>
-                <th onClick={() => toggle('type')} className="table-header text-left px-5 py-4 cursor-pointer select-none hover:text-slate-900 dark:hover:text-white transition-colors">
+                <th scope="col" onClick={() => toggle('type')} aria-sort={sortKey === 'type' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'} className="table-header text-left px-5 py-4 cursor-pointer select-none hover:text-slate-900 dark:hover:text-white transition-colors">
                   <span className="flex items-center">Type <SortIcon col="type" sortKey={sortKey} sortDir={sortDir} /></span>
                 </th>
-                <th onClick={() => toggle('familyMemberName')} className="table-header text-left px-5 py-4 hidden sm:table-cell cursor-pointer select-none hover:text-slate-900 dark:hover:text-white transition-colors">
+                <th scope="col" onClick={() => toggle('familyMemberName')} aria-sort={sortKey === 'familyMemberName' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'} className="table-header text-left px-5 py-4 hidden sm:table-cell cursor-pointer select-none hover:text-slate-900 dark:hover:text-white transition-colors">
                   <span className="flex items-center">Member <SortIcon col="familyMemberName" sortKey={sortKey} sortDir={sortDir} /></span>
                 </th>
-                <th onClick={() => toggle('period')} className="table-header text-left px-5 py-4 hidden md:table-cell cursor-pointer select-none hover:text-slate-900 dark:hover:text-white transition-colors">
+                <th scope="col" onClick={() => toggle('period')} aria-sort={sortKey === 'period' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'} className="table-header text-left px-5 py-4 hidden md:table-cell cursor-pointer select-none hover:text-slate-900 dark:hover:text-white transition-colors">
                   <span className="flex items-center">Period <SortIcon col="period" sortKey={sortKey} sortDir={sortDir} /></span>
                 </th>
-                <th className="table-header text-left px-5 py-4 hidden lg:table-cell">Effective Range</th>
-                <th onClick={() => toggle('amount')} className="table-header text-right px-5 py-4 cursor-pointer select-none hover:text-slate-900 dark:hover:text-white transition-colors">
+                <th scope="col" className="table-header text-left px-5 py-4 hidden lg:table-cell">Effective Range</th>
+                <th scope="col" onClick={() => toggle('amount')} aria-sort={sortKey === 'amount' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'} className="table-header text-right px-5 py-4 cursor-pointer select-none hover:text-slate-900 dark:hover:text-white transition-colors">
                   <span className="flex items-center justify-end">Amount <SortIcon col="amount" sortKey={sortKey} sortDir={sortDir} /></span>
                 </th>
-                <th className="table-header text-right px-5 py-4 hidden xl:table-cell">Remaining</th>
-                <th className="table-header text-right px-5 py-4">Actions</th>
+                <th scope="col" className="table-header text-right px-5 py-4 hidden xl:table-cell">Remaining</th>
+                <th scope="col" className="table-header text-right px-5 py-4">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -154,7 +155,7 @@ export default function IncomePage() {
                     <td className="px-5 py-3.5 hidden lg:table-cell">
                       {item.effectiveFrom ? (
                         <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-white/50">
-                          <CalendarRange size={12} className="text-primary-400 flex-shrink-0" />
+                          <CalendarRange aria-hidden="true" size={12} className="text-primary-400 flex-shrink-0" />
                           {format(new Date(item.effectiveFrom), 'dd MMM yy')}
                           {item.effectiveTo && <> → {format(new Date(item.effectiveTo), 'dd MMM yy')}</>}
                           {!item.effectiveTo && <span className="text-purple-400">→ ongoing</span>}
@@ -187,41 +188,41 @@ export default function IncomePage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="label">Income Type *</label>
-              <select className="select-field" value={form.type} onChange={setField('type')} required>
+              <label htmlFor="income-type" className="label">Income Type *</label>
+              <select id="income-type" className="select-field" value={form.type} onChange={setField('type')} required>
                 {INCOME_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
               </select>
             </div>
             <div>
-              <label className="label">Amount (₹) *</label>
-              <input type="number" className="input-field" placeholder="0.00" min="0" step="0.01"
+              <label htmlFor="income-amount" className="label">Amount (₹) *</label>
+              <input id="income-amount" type="number" className="input-field" placeholder="0.00" min="0" step="0.01"
                 value={form.amount} onChange={setField('amount')} required />
             </div>
             <div>
-              <label className="label">Transaction Date *</label>
-              <input type="date" className="input-field" value={form.date} onChange={setField('date')} required />
+              <label htmlFor="income-date" className="label">Transaction Date *</label>
+              <input id="income-date" type="date" className="input-field" value={form.date} onChange={setField('date')} required />
             </div>
             <div>
-              <label className="label">Period</label>
-              <select className="select-field" value={form.period} onChange={setField('period')}>
+              <label htmlFor="income-period" className="label">Period</label>
+              <select id="income-period" className="select-field" value={form.period} onChange={setField('period')}>
                 {PERIODS.map(p => <option key={p} value={p} className="capitalize">{p}</option>)}
               </select>
             </div>
 
             <div className="col-span-2">
               <div className="flex items-center gap-2 mb-2">
-                <CalendarRange size={14} className="text-primary-400" />
+                <CalendarRange size={14} aria-hidden="true" className="text-primary-400" />
                 <span className="text-sm font-medium text-slate-600 dark:text-white/70">Effective Date Range</span>
                 <span className="text-xs text-slate-400 dark:text-white/30">(for projection calculation)</span>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="label">From *</label>
-                  <input type="date" className="input-field" value={form.effectiveFrom} onChange={setField('effectiveFrom')} required />
+                  <label htmlFor="income-effective-from" className="label">From *</label>
+                  <input id="income-effective-from" type="date" className="input-field" value={form.effectiveFrom} onChange={setField('effectiveFrom')} required />
                 </div>
                 <div>
-                  <label className="label">To <span className="text-slate-400 dark:text-white/30">(leave blank = ongoing)</span></label>
-                  <input type="date" className="input-field" value={form.effectiveTo}
+                  <label htmlFor="income-effective-to" className="label">To <span className="text-slate-400 dark:text-white/30">(leave blank = ongoing)</span></label>
+                  <input id="income-effective-to" type="date" className="input-field" value={form.effectiveTo}
                     min={form.effectiveFrom || undefined}
                     onChange={setField('effectiveTo')} />
                 </div>
@@ -229,15 +230,15 @@ export default function IncomePage() {
             </div>
 
             <div className="col-span-2">
-              <label className="label">Family Member</label>
-              <select className="select-field" value={form.familyMemberId} onChange={setField('familyMemberId')}>
+              <label htmlFor="income-member" className="label">Family Member</label>
+              <select id="income-member" className="select-field" value={form.familyMemberId} onChange={setField('familyMemberId')}>
                 <option value="">Self / All Family</option>
                 {familyMembers.map(m => <option key={m._id || m.id} value={m._id || m.id}>{m.name} ({m.relationship})</option>)}
               </select>
             </div>
             <div className="col-span-2">
-              <label className="label">Description</label>
-              <input type="text" className="input-field" placeholder="Optional note..." value={form.description} onChange={setField('description')} />
+              <label htmlFor="income-description" className="label">Description</label>
+              <input id="income-description" type="text" className="input-field" placeholder="Optional note..." value={form.description} onChange={setField('description')} />
             </div>
           </div>
 

@@ -101,18 +101,20 @@ export default function InvestmentPage() {
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2 flex-wrap">
-          <Filter size={15} className="text-slate-400 dark:text-white/40" />
-          <select className="select-field w-auto text-sm py-2" value={filterType} onChange={e => setFilterType(e.target.value)}>
+          <Filter size={15} aria-hidden="true" className="text-slate-400 dark:text-white/40" />
+          <label htmlFor="inv-filter-type" className="sr-only">Filter by investment type</label>
+          <select id="inv-filter-type" className="select-field w-auto text-sm py-2" value={filterType} onChange={e => setFilterType(e.target.value)}>
             <option value="">All Types</option>
             {INV_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
           </select>
-          <select className="select-field w-auto text-sm py-2" value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
+          <label htmlFor="inv-filter-status" className="sr-only">Filter by investment status</label>
+          <select id="inv-filter-status" className="select-field w-auto text-sm py-2" value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
             <option value="">All Status</option>
             {STATUSES.map(s => <option key={s} value={s} className="capitalize">{s}</option>)}
           </select>
         </div>
         <button onClick={openAdd} className="btn-primary flex items-center gap-2 text-sm">
-          <Plus size={16} /> Add Investment
+          <Plus aria-hidden="true" size={16} /> Add Investment
         </button>
       </div>
 
@@ -121,21 +123,21 @@ export default function InvestmentPage() {
           <table className="w-full">
             <thead className="border-b border-slate-200 dark:border-white/10">
               <tr>
-                <th onClick={() => toggle('type')} className="table-header text-left px-5 py-4 cursor-pointer select-none hover:text-slate-900 dark:hover:text-white transition-colors">
+                <th scope="col" onClick={() => toggle('type')} aria-sort={sortKey === 'type' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'} className="table-header text-left px-5 py-4 cursor-pointer select-none hover:text-slate-900 dark:hover:text-white transition-colors">
                   <span className="flex items-center">Type <SortIcon col="type" sortKey={sortKey} sortDir={sortDir} /></span>
                 </th>
-                <th onClick={() => toggle('status')} className="table-header text-left px-5 py-4 hidden sm:table-cell cursor-pointer select-none hover:text-slate-900 dark:hover:text-white transition-colors">
+                <th scope="col" onClick={() => toggle('status')} aria-sort={sortKey === 'status' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'} className="table-header text-left px-5 py-4 hidden sm:table-cell cursor-pointer select-none hover:text-slate-900 dark:hover:text-white transition-colors">
                   <span className="flex items-center">Status <SortIcon col="status" sortKey={sortKey} sortDir={sortDir} /></span>
                 </th>
-                <th className="table-header text-left px-5 py-4 hidden md:table-cell">Effective Range</th>
-                <th onClick={() => toggle('amount')} className="table-header text-right px-5 py-4 cursor-pointer select-none hover:text-slate-900 dark:hover:text-white transition-colors">
+                <th scope="col" className="table-header text-left px-5 py-4 hidden md:table-cell">Effective Range</th>
+                <th scope="col" onClick={() => toggle('amount')} aria-sort={sortKey === 'amount' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'} className="table-header text-right px-5 py-4 cursor-pointer select-none hover:text-slate-900 dark:hover:text-white transition-colors">
                   <span className="flex items-center justify-end">Invested <SortIcon col="amount" sortKey={sortKey} sortDir={sortDir} /></span>
                 </th>
-                <th onClick={() => toggle('actualReturns')} className="table-header text-right px-5 py-4 hidden lg:table-cell cursor-pointer select-none hover:text-slate-900 dark:hover:text-white transition-colors">
+                <th scope="col" onClick={() => toggle('actualReturns')} aria-sort={sortKey === 'actualReturns' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'} className="table-header text-right px-5 py-4 hidden lg:table-cell cursor-pointer select-none hover:text-slate-900 dark:hover:text-white transition-colors">
                   <span className="flex items-center justify-end">Returns <SortIcon col="actualReturns" sortKey={sortKey} sortDir={sortDir} /></span>
                 </th>
-                <th className="table-header text-right px-5 py-4 hidden xl:table-cell">Projected Remaining</th>
-                <th className="table-header text-right px-5 py-4">Actions</th>
+                <th scope="col" className="table-header text-right px-5 py-4 hidden xl:table-cell">Projected Remaining</th>
+                <th scope="col" className="table-header text-right px-5 py-4">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -159,7 +161,7 @@ export default function InvestmentPage() {
                     <td className="px-5 py-3.5 hidden md:table-cell">
                       {item.effectiveFrom ? (
                         <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-white/50">
-                          <CalendarRange size={12} className="text-blue-400 flex-shrink-0" />
+                          <CalendarRange aria-hidden="true" size={12} className="text-blue-400 flex-shrink-0" />
                           {format(new Date(item.effectiveFrom), 'dd MMM yy')}
                           {item.effectiveTo && <> → {format(new Date(item.effectiveTo), 'dd MMM yy')}</>}
                           {!item.effectiveTo && <span className="text-purple-400">→ ongoing</span>}
@@ -197,72 +199,72 @@ export default function InvestmentPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="label">Investment Type *</label>
-              <select className="select-field" value={form.type} onChange={setField('type')} required>
+              <label htmlFor="inv-type" className="label">Investment Type *</label>
+              <select id="inv-type" className="select-field" value={form.type} onChange={setField('type')} required>
                 {INV_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
               </select>
             </div>
             <div>
-              <label className="label">Amount Invested (₹) *</label>
-              <input type="number" className="input-field" placeholder="0.00" min="0" step="0.01" value={form.amount} onChange={setField('amount')} required />
+              <label htmlFor="inv-amount" className="label">Amount Invested (₹) *</label>
+              <input id="inv-amount" type="number" className="input-field" placeholder="0.00" min="0" step="0.01" value={form.amount} onChange={setField('amount')} required />
             </div>
             <div>
-              <label className="label">Expected Returns (₹)</label>
-              <input type="number" className="input-field" placeholder="0.00" min="0" step="0.01" value={form.expectedReturns} onChange={setField('expectedReturns')} />
+              <label htmlFor="inv-expected-returns" className="label">Expected Returns (₹)</label>
+              <input id="inv-expected-returns" type="number" className="input-field" placeholder="0.00" min="0" step="0.01" value={form.expectedReturns} onChange={setField('expectedReturns')} />
             </div>
             <div>
-              <label className="label">Actual Returns (₹)</label>
-              <input type="number" className="input-field" placeholder="0.00" step="0.01" value={form.actualReturns} onChange={setField('actualReturns')} />
+              <label htmlFor="inv-actual-returns" className="label">Actual Returns (₹)</label>
+              <input id="inv-actual-returns" type="number" className="input-field" placeholder="0.00" step="0.01" value={form.actualReturns} onChange={setField('actualReturns')} />
             </div>
             <div>
-              <label className="label">Start Date *</label>
-              <input type="date" className="input-field" value={form.date} onChange={setField('date')} required />
+              <label htmlFor="inv-date" className="label">Start Date *</label>
+              <input id="inv-date" type="date" className="input-field" value={form.date} onChange={setField('date')} required />
             </div>
             <div>
-              <label className="label">Maturity Date</label>
-              <input type="date" className="input-field" value={form.maturityDate} onChange={setField('maturityDate')} />
+              <label htmlFor="inv-maturity-date" className="label">Maturity Date</label>
+              <input id="inv-maturity-date" type="date" className="input-field" value={form.maturityDate} onChange={setField('maturityDate')} />
             </div>
 
             <div className="col-span-2">
               <div className="flex items-center gap-2 mb-2">
-                <CalendarRange size={14} className="text-blue-400" />
+                <CalendarRange size={14} aria-hidden="true" className="text-blue-400" />
                 <span className="text-sm font-medium text-slate-600 dark:text-white/70">Effective Date Range</span>
                 <span className="text-xs text-slate-400 dark:text-white/30">(for projection of recurring contributions)</span>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="label">From *</label>
-                  <input type="date" className="input-field" value={form.effectiveFrom} onChange={setField('effectiveFrom')} required />
+                  <label htmlFor="inv-effective-from" className="label">From *</label>
+                  <input id="inv-effective-from" type="date" className="input-field" value={form.effectiveFrom} onChange={setField('effectiveFrom')} required />
                 </div>
                 <div>
-                  <label className="label">To <span className="text-slate-400 dark:text-white/30">(blank = ongoing)</span></label>
-                  <input type="date" className="input-field" value={form.effectiveTo} min={form.effectiveFrom || undefined} onChange={setField('effectiveTo')} />
+                  <label htmlFor="inv-effective-to" className="label">To <span className="text-slate-400 dark:text-white/30">(blank = ongoing)</span></label>
+                  <input id="inv-effective-to" type="date" className="input-field" value={form.effectiveTo} min={form.effectiveFrom || undefined} onChange={setField('effectiveTo')} />
                 </div>
               </div>
             </div>
 
             <div>
-              <label className="label">Status</label>
-              <select className="select-field" value={form.status} onChange={setField('status')}>
+              <label htmlFor="inv-status" className="label">Status</label>
+              <select id="inv-status" className="select-field" value={form.status} onChange={setField('status')}>
                 {STATUSES.map(s => <option key={s} value={s} className="capitalize">{s}</option>)}
               </select>
             </div>
             <div>
-              <label className="label">Period</label>
-              <select className="select-field" value={form.period} onChange={setField('period')}>
+              <label htmlFor="inv-period" className="label">Period</label>
+              <select id="inv-period" className="select-field" value={form.period} onChange={setField('period')}>
                 {PERIODS.map(p => <option key={p} value={p} className="capitalize">{p}</option>)}
               </select>
             </div>
             <div className="col-span-2">
-              <label className="label">Family Member</label>
-              <select className="select-field" value={form.familyMemberId} onChange={setField('familyMemberId')}>
+              <label htmlFor="inv-member" className="label">Family Member</label>
+              <select id="inv-member" className="select-field" value={form.familyMemberId} onChange={setField('familyMemberId')}>
                 <option value="">Self / All Family</option>
                 {familyMembers.map(m => <option key={m._id || m.id} value={m._id || m.id}>{m.name} ({m.relationship})</option>)}
               </select>
             </div>
             <div className="col-span-2">
-              <label className="label">Description</label>
-              <input type="text" className="input-field" placeholder="Investment details..." value={form.description} onChange={setField('description')} />
+              <label htmlFor="inv-description" className="label">Description</label>
+              <input id="inv-description" type="text" className="input-field" placeholder="Investment details..." value={form.description} onChange={setField('description')} />
             </div>
           </div>
 
