@@ -3,6 +3,7 @@ import { Plus, Edit2, Trash2, TrendingDown, Filter, CalendarRange, Calendar, Arr
 import { useSortable, SortIcon } from '../../hooks/useSortable';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import { useFinance } from '../../context/FinanceContext';
+import { useTheme } from '../../context/ThemeContext';
 import Modal from '../../components/common/Modal';
 import StatCard from '../../components/common/StatCard';
 import ProjectionPanel from '../../components/common/ProjectionPanel';
@@ -33,17 +34,17 @@ function DueBadge({ effectiveDate }) {
 export default function ExpensesPage() {
   const { income, expenses, addExpense, updateExpense, deleteExpense, familyMembers, period, financialYear,
           plannedExpenses, addPlannedExpense, updatePlannedExpense, deletePlannedExpense, movePlannedToExpense } = useFinance();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
 
   const [tab, setTab] = useState('actual');
 
-  // Actual expenses state
   const [modalOpen, setModalOpen] = useState(false);
   const [editItem, setEditItem] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const [filterCat, setFilterCat] = useState('');
 
-  // Planned expenses state
   const [plannedModalOpen, setPlannedModalOpen] = useState(false);
   const [editPlanned, setEditPlanned] = useState(null);
   const [plannedForm, setPlannedForm] = useState(emptyPlannedForm);
@@ -53,7 +54,6 @@ export default function ExpensesPage() {
   const [moveDate, setMoveDate] = useState('');
   const [moving, setMoving] = useState(false);
 
-  // Actual expenses
   const filtered = useMemo(() => {
     let data = financialYear ? filterByFY(expenses, financialYear) : filterByPeriod(expenses, period);
     if (filterCat) data = data.filter(e => e.category === filterCat);
@@ -65,7 +65,6 @@ export default function ExpensesPage() {
   const { sorted, sortKey, sortDir, toggle } = useSortable(filtered, 'date', 'desc');
   const topCategory = [...categoryData].sort((a, b) => b.value - a.value)[0];
 
-  // Planned expenses summary
   const plannedTotal = useMemo(() => plannedExpenses.reduce((s, e) => s + e.amount, 0), [plannedExpenses]);
   const dueCount = useMemo(() => plannedExpenses.filter(e => isPast(new Date(e.effectiveDate)) || isToday(new Date(e.effectiveDate))).length, [plannedExpenses]);
   const netProfit = useMemo(() => {
@@ -74,7 +73,13 @@ export default function ExpensesPage() {
   }, [income, expenses, period, financialYear]);
   const needToEarn = useMemo(() => Math.max(0, plannedTotal - Math.max(0, netProfit)), [plannedTotal, netProfit]);
 
-  // --- Actual expense handlers ---
+  const tooltipStyle = useMemo(() => ({
+    background: isDark ? 'rgba(15,23,42,0.95)' : 'rgba(255,255,255,0.95)',
+    border: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.08)',
+    borderRadius: '12px',
+    color: isDark ? 'white' : '#1e293b',
+  }), [isDark]);
+
   const openAdd = () => { setEditItem(null); setForm(emptyForm); setModalOpen(true); };
   const openEdit = (item) => {
     setEditItem(item);
@@ -106,7 +111,6 @@ export default function ExpensesPage() {
     if (confirm('Delete this expense?')) await deleteExpense(id);
   };
 
-  // --- Planned expense handlers ---
   const openAddPlanned = () => { setEditPlanned(null); setPlannedForm(emptyPlannedForm); setPlannedModalOpen(true); };
   const openEditPlanned = (item) => {
     setEditPlanned(item);
@@ -160,13 +164,13 @@ export default function ExpensesPage() {
       <div className="flex gap-2">
         <button
           onClick={() => setTab('actual')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${tab === 'actual' ? 'bg-primary-500 text-white' : 'bg-white/5 text-white/50 hover:text-white hover:bg-white/10'}`}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${tab === 'actual' ? 'bg-primary-500 text-white' : 'bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-white/50 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10'}`}
         >
           Actual Expenses
         </button>
         <button
           onClick={() => setTab('planned')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${tab === 'planned' ? 'bg-primary-500 text-white' : 'bg-white/5 text-white/50 hover:text-white hover:bg-white/10'}`}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${tab === 'planned' ? 'bg-primary-500 text-white' : 'bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-white/50 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10'}`}
         >
           Planned Expenses
           {dueCount > 0 && (
@@ -196,7 +200,7 @@ export default function ExpensesPage() {
                       <Pie data={categoryData} cx="50%" cy="50%" innerRadius={40} outerRadius={65} dataKey="value" paddingAngle={3}>
                         {categoryData.map(entry => <Cell key={entry.name} fill={CATEGORY_COLORS[entry.name] || '#6366f1'} />)}
                       </Pie>
-                      <Tooltip formatter={val => formatCurrency(val)} contentStyle={{ background: 'rgba(15,23,42,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }} />
+                      <Tooltip formatter={val => formatCurrency(val)} contentStyle={tooltipStyle} />
                     </PieChart>
                   </ResponsiveContainer>
                   <div className="space-y-1.5 mt-3 max-h-48 overflow-y-auto">
@@ -204,23 +208,23 @@ export default function ExpensesPage() {
                       <div key={item.name} className="flex items-center justify-between text-xs">
                         <div className="flex items-center gap-2">
                           <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: CATEGORY_COLORS[item.name] || '#6366f1' }} />
-                          <span className="text-white/60">{item.name}</span>
+                          <span className="text-slate-500 dark:text-white/60">{item.name}</span>
                         </div>
-                        <span className="text-white font-medium">{formatCurrency(item.value)}</span>
+                        <span className="text-slate-900 dark:text-white font-medium">{formatCurrency(item.value)}</span>
                       </div>
                     ))}
                   </div>
                 </>
               ) : (
-                <div className="h-48 flex items-center justify-center text-white/30 text-sm">No data yet</div>
+                <div className="h-48 flex items-center justify-center text-slate-400 dark:text-white/30 text-sm">No data yet</div>
               )}
             </div>
 
             {/* Table */}
             <div className="lg:col-span-2 glass-card overflow-hidden">
-              <div className="flex items-center justify-between p-5 border-b border-white/10">
+              <div className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-white/10">
                 <div className="flex items-center gap-2">
-                  <Filter size={15} className="text-white/40" />
+                  <Filter size={15} className="text-slate-400 dark:text-white/40" />
                   <select className="select-field w-auto text-sm py-2" value={filterCat} onChange={e => setFilterCat(e.target.value)}>
                     <option value="">All Categories</option>
                     {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
@@ -232,16 +236,16 @@ export default function ExpensesPage() {
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="border-b border-white/10">
+                  <thead className="border-b border-slate-200 dark:border-white/10">
                     <tr>
-                      <th onClick={() => toggle('category')} className="table-header text-left px-5 py-3 cursor-pointer select-none hover:text-white transition-colors">
+                      <th onClick={() => toggle('category')} className="table-header text-left px-5 py-3 cursor-pointer select-none hover:text-slate-900 dark:hover:text-white transition-colors">
                         <span className="flex items-center">Category <SortIcon col="category" sortKey={sortKey} sortDir={sortDir} /></span>
                       </th>
-                      <th onClick={() => toggle('familyMemberName')} className="table-header text-left px-5 py-3 hidden sm:table-cell cursor-pointer select-none hover:text-white transition-colors">
+                      <th onClick={() => toggle('familyMemberName')} className="table-header text-left px-5 py-3 hidden sm:table-cell cursor-pointer select-none hover:text-slate-900 dark:hover:text-white transition-colors">
                         <span className="flex items-center">Member <SortIcon col="familyMemberName" sortKey={sortKey} sortDir={sortDir} /></span>
                       </th>
                       <th className="table-header text-left px-5 py-3 hidden md:table-cell">Effective Range</th>
-                      <th onClick={() => toggle('amount')} className="table-header text-right px-5 py-3 cursor-pointer select-none hover:text-white transition-colors">
+                      <th onClick={() => toggle('amount')} className="table-header text-right px-5 py-3 cursor-pointer select-none hover:text-slate-900 dark:hover:text-white transition-colors">
                         <span className="flex items-center justify-end">Amount <SortIcon col="amount" sortKey={sortKey} sortDir={sortDir} /></span>
                       </th>
                       <th className="table-header text-right px-5 py-3 hidden lg:table-cell">Remaining</th>
@@ -250,7 +254,7 @@ export default function ExpensesPage() {
                   </thead>
                   <tbody>
                     {sorted.length === 0 ? (
-                      <tr><td colSpan={6} className="px-5 py-16 text-center text-white/30">No expenses found. Add your first entry!</td></tr>
+                      <tr><td colSpan={6} className="px-5 py-16 text-center text-slate-400 dark:text-white/30">No expenses found. Add your first entry!</td></tr>
                     ) : sorted.map(item => {
                       const proj = item.effectiveFrom
                         ? calculateProjection(item.amount, item.period, item.effectiveFrom, item.effectiveTo)
@@ -260,32 +264,32 @@ export default function ExpensesPage() {
                           <td className="px-5 py-3">
                             <div className="flex items-center gap-2">
                               <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: CATEGORY_COLORS[item.category] || '#6366f1' }} />
-                              <span className="text-sm text-white/80">{item.category}</span>
+                              <span className="text-sm text-slate-700 dark:text-white/80">{item.category}</span>
                             </div>
                           </td>
-                          <td className="px-5 py-3 hidden sm:table-cell text-sm text-white/50">{item.familyMemberName || 'Self'}</td>
+                          <td className="px-5 py-3 hidden sm:table-cell text-sm text-slate-500 dark:text-white/50">{item.familyMemberName || 'Self'}</td>
                           <td className="px-5 py-3 hidden md:table-cell">
                             {item.effectiveFrom ? (
-                              <div className="flex items-center gap-1 text-xs text-white/50">
+                              <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-white/50">
                                 <CalendarRange size={12} className="text-red-400 flex-shrink-0" />
                                 {format(new Date(item.effectiveFrom), 'dd MMM yy')}
                                 {item.effectiveTo && <> → {format(new Date(item.effectiveTo), 'dd MMM yy')}</>}
                                 {!item.effectiveTo && <span className="text-purple-400">→ ongoing</span>}
                               </div>
-                            ) : <span className="text-white/25 text-xs">—</span>}
+                            ) : <span className="text-slate-300 dark:text-white/25 text-xs">—</span>}
                           </td>
                           <td className="px-5 py-3 text-right font-semibold text-expense">{formatCurrency(item.amount)}</td>
                           <td className="px-5 py-3 hidden lg:table-cell text-right">
                             {proj ? (
-                              <span className={`text-sm font-medium ${proj.remainingAmount > 0 ? 'text-yellow-400' : 'text-white/30'}`}>
+                              <span className={`text-sm font-medium ${proj.remainingAmount > 0 ? 'text-yellow-400' : 'text-slate-300 dark:text-white/30'}`}>
                                 {proj.remainingAmount !== null ? formatCurrency(proj.remainingAmount) : '∞'}
                               </span>
-                            ) : <span className="text-white/25 text-xs">—</span>}
+                            ) : <span className="text-slate-300 dark:text-white/25 text-xs">—</span>}
                           </td>
                           <td className="px-5 py-3 text-right">
                             <div className="flex items-center justify-end gap-1">
-                              <button onClick={() => openEdit(item)} className="p-1.5 rounded-lg hover:bg-white/10 text-white/40 hover:text-primary-400 transition-colors"><Edit2 size={14} /></button>
-                              <button onClick={() => handleDelete(item._id || item.id)} className="p-1.5 rounded-lg hover:bg-red-500/10 text-white/40 hover:text-red-400 transition-colors"><Trash2 size={14} /></button>
+                              <button onClick={() => openEdit(item)} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400 dark:text-white/40 hover:text-primary-500 dark:hover:text-primary-400 transition-colors"><Edit2 size={14} /></button>
+                              <button onClick={() => handleDelete(item._id || item.id)} className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 text-slate-400 dark:text-white/40 hover:text-red-500 dark:hover:text-red-400 transition-colors"><Trash2 size={14} /></button>
                             </div>
                           </td>
                         </tr>
@@ -316,22 +320,22 @@ export default function ExpensesPage() {
                 <div>
                   {needToEarn === 0 ? (
                     <>
-                      <p className="text-sm text-white/60">Your net profit covers all planned expenses</p>
+                      <p className="text-sm text-slate-500 dark:text-white/60">Your net profit covers all planned expenses</p>
                       <p className="text-2xl font-bold text-green-400">{formatCurrency(plannedTotal)}</p>
-                      <p className="text-xs text-white/40 mt-0.5">covered — surplus of {formatCurrency(netProfit - plannedTotal)}</p>
+                      <p className="text-xs text-slate-400 dark:text-white/40 mt-0.5">covered — surplus of {formatCurrency(netProfit - plannedTotal)}</p>
                     </>
                   ) : (
                     <>
-                      <p className="text-sm text-white/60">You still need to earn</p>
-                      <p className="text-2xl font-bold text-primary-400">{formatCurrency(needToEarn)}</p>
-                      <p className="text-xs text-white/40 mt-0.5">after your net profit of {formatCurrency(netProfit)} to cover {plannedExpenses.length} planned expense{plannedExpenses.length !== 1 ? 's' : ''}</p>
+                      <p className="text-sm text-slate-500 dark:text-white/60">You still need to earn</p>
+                      <p className="text-2xl font-bold text-primary-500 dark:text-primary-400">{formatCurrency(needToEarn)}</p>
+                      <p className="text-xs text-slate-400 dark:text-white/40 mt-0.5">after your net profit of {formatCurrency(netProfit)} to cover {plannedExpenses.length} planned expense{plannedExpenses.length !== 1 ? 's' : ''}</p>
                     </>
                   )}
                 </div>
                 {dueCount > 0 && (
                   <div className="text-right">
                     <p className="text-sm text-red-400 font-semibold">{dueCount} expense{dueCount !== 1 ? 's' : ''} due</p>
-                    <p className="text-xs text-white/40">Effective date reached — ready to move</p>
+                    <p className="text-xs text-slate-400 dark:text-white/40">Effective date reached — ready to move</p>
                   </div>
                 )}
               </div>
@@ -340,7 +344,7 @@ export default function ExpensesPage() {
 
           {/* Planned table */}
           <div className="glass-card overflow-hidden">
-            <div className="flex items-center justify-between p-5 border-b border-white/10">
+            <div className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-white/10">
               <h3 className="section-title">Planned Expenses</h3>
               <button onClick={openAddPlanned} className="btn-primary flex items-center gap-2 text-sm">
                 <Plus size={16} /> Add Planned
@@ -348,7 +352,7 @@ export default function ExpensesPage() {
             </div>
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="border-b border-white/10">
+                <thead className="border-b border-slate-200 dark:border-white/10">
                   <tr>
                     <th className="table-header text-left px-5 py-3">Category</th>
                     <th className="table-header text-left px-5 py-3 hidden sm:table-cell">Member</th>
@@ -361,36 +365,36 @@ export default function ExpensesPage() {
                 </thead>
                 <tbody>
                   {plannedExpenses.length === 0 ? (
-                    <tr><td colSpan={7} className="px-5 py-16 text-center text-white/30">No planned expenses. Add future expenses to track what you need to earn.</td></tr>
+                    <tr><td colSpan={7} className="px-5 py-16 text-center text-slate-400 dark:text-white/30">No planned expenses. Add future expenses to track what you need to earn.</td></tr>
                   ) : (
                     plannedExpenses.map(item => (
                       <tr key={item._id || item.id} className="table-row">
                         <td className="px-5 py-3">
                           <div className="flex items-center gap-2">
                             <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: CATEGORY_COLORS[item.category] || '#6366f1' }} />
-                            <span className="text-sm text-white/80">{item.category}</span>
+                            <span className="text-sm text-slate-700 dark:text-white/80">{item.category}</span>
                           </div>
                         </td>
-                        <td className="px-5 py-3 hidden sm:table-cell text-sm text-white/50">{item.familyMemberName || 'Self'}</td>
-                        <td className="px-5 py-3 text-sm text-white/50">
+                        <td className="px-5 py-3 hidden sm:table-cell text-sm text-slate-500 dark:text-white/50">{item.familyMemberName || 'Self'}</td>
+                        <td className="px-5 py-3 text-sm text-slate-500 dark:text-white/50">
                           {item.effectiveDate ? format(new Date(item.effectiveDate), 'dd MMM yyyy') : '-'}
                         </td>
                         <td className="px-5 py-3 hidden md:table-cell">
                           {item.effectiveDate && <DueBadge effectiveDate={item.effectiveDate} />}
                         </td>
-                        <td className="px-5 py-3 hidden lg:table-cell text-sm text-white/50 max-w-xs truncate">{item.notes || item.description || '-'}</td>
+                        <td className="px-5 py-3 hidden lg:table-cell text-sm text-slate-500 dark:text-white/50 max-w-xs truncate">{item.notes || item.description || '-'}</td>
                         <td className="px-5 py-3 text-right font-semibold text-expense">{formatCurrency(item.amount)}</td>
                         <td className="px-5 py-3 text-right">
                           <div className="flex items-center justify-end gap-1">
                             <button
                               onClick={() => openMoveModal(item)}
                               title="Mark as done — move to Expenses"
-                              className="p-1.5 rounded-lg hover:bg-green-500/10 text-white/40 hover:text-green-400 transition-colors"
+                              className="p-1.5 rounded-lg hover:bg-green-50 dark:hover:bg-green-500/10 text-slate-400 dark:text-white/40 hover:text-green-500 dark:hover:text-green-400 transition-colors"
                             >
                               <ArrowRight size={14} />
                             </button>
-                            <button onClick={() => openEditPlanned(item)} className="p-1.5 rounded-lg hover:bg-white/10 text-white/40 hover:text-primary-400 transition-colors"><Edit2 size={14} /></button>
-                            <button onClick={() => handleDeletePlanned(item._id || item.id)} className="p-1.5 rounded-lg hover:bg-red-500/10 text-white/40 hover:text-red-400 transition-colors"><Trash2 size={14} /></button>
+                            <button onClick={() => openEditPlanned(item)} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400 dark:text-white/40 hover:text-primary-500 dark:hover:text-primary-400 transition-colors"><Edit2 size={14} /></button>
+                            <button onClick={() => handleDeletePlanned(item._id || item.id)} className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 text-slate-400 dark:text-white/40 hover:text-red-500 dark:hover:text-red-400 transition-colors"><Trash2 size={14} /></button>
                           </div>
                         </td>
                       </tr>
@@ -428,12 +432,11 @@ export default function ExpensesPage() {
               </select>
             </div>
 
-            {/* Effective Date Range */}
             <div className="col-span-2">
               <div className="flex items-center gap-2 mb-2">
                 <CalendarRange size={14} className="text-red-400" />
-                <span className="text-sm font-medium text-white/70">Effective Date Range</span>
-                <span className="text-xs text-white/30">(for projection)</span>
+                <span className="text-sm font-medium text-slate-600 dark:text-white/70">Effective Date Range</span>
+                <span className="text-xs text-slate-400 dark:text-white/30">(for projection)</span>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -441,7 +444,7 @@ export default function ExpensesPage() {
                   <input type="date" className="input-field" value={form.effectiveFrom} onChange={setField('effectiveFrom')} required />
                 </div>
                 <div>
-                  <label className="label">To <span className="text-white/30">(blank = ongoing)</span></label>
+                  <label className="label">To <span className="text-slate-400 dark:text-white/30">(blank = ongoing)</span></label>
                   <input type="date" className="input-field" value={form.effectiveTo} min={form.effectiveFrom || undefined} onChange={setField('effectiveTo')} />
                 </div>
               </div>
@@ -460,7 +463,6 @@ export default function ExpensesPage() {
             </div>
           </div>
 
-          {/* Live Projection */}
           {form.amount && form.effectiveFrom && (
             <ProjectionPanel
               amount={form.amount}
@@ -533,20 +535,20 @@ export default function ExpensesPage() {
       <Modal isOpen={moveModalOpen} onClose={() => setMoveModalOpen(false)} title="Move to Expenses">
         <div className="space-y-4">
           {moveItem && (
-            <div className="glass-card p-4 bg-white/5 rounded-xl space-y-1">
+            <div className="glass-card p-4 rounded-xl space-y-1">
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: CATEGORY_COLORS[moveItem.category] || '#6366f1' }} />
-                <span className="text-white font-medium">{moveItem.category}</span>
+                <span className="text-slate-900 dark:text-white font-medium">{moveItem.category}</span>
                 <span className="ml-auto font-bold text-expense">{formatCurrency(moveItem.amount)}</span>
               </div>
-              {moveItem.description && <p className="text-sm text-white/50">{moveItem.description}</p>}
+              {moveItem.description && <p className="text-sm text-slate-500 dark:text-white/50">{moveItem.description}</p>}
             </div>
           )}
           <div>
             <label className="label">Actual Expense Date *</label>
             <input type="date" className="input-field" value={moveDate} onChange={e => setMoveDate(e.target.value)} required />
           </div>
-          <p className="text-xs text-white/40">This will remove the item from Planned Expenses and add it to your Actual Expenses.</p>
+          <p className="text-xs text-slate-400 dark:text-white/40">This will remove the item from Planned Expenses and add it to your Actual Expenses.</p>
           <div className="flex gap-3 pt-1">
             <button type="button" onClick={() => setMoveModalOpen(false)} className="btn-secondary flex-1">Cancel</button>
             <button onClick={handleMove} disabled={moving || !moveDate} className="btn-primary flex-1 flex items-center justify-center gap-2">

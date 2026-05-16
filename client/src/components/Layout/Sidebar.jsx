@@ -26,22 +26,22 @@ export default function Sidebar({ isOpen, onClose }) {
   return (
     <>
       {isOpen && (
-        <div className="fixed inset-0 bg-black/60 z-20 lg:hidden" onClick={onClose} />
+        <div className="fixed inset-0 bg-black/20 dark:bg-black/60 z-20 lg:hidden" onClick={onClose} />
       )}
       <aside className={`
         fixed left-0 top-0 h-full w-64 z-30
-        bg-dark-900/90 backdrop-blur-xl border-r border-white/10
+        bg-white/97 dark:bg-dark-900/90 backdrop-blur-xl border-r border-slate-200 dark:border-white/10
         flex flex-col transition-transform duration-300 ease-in-out
         ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         {/* Logo */}
-        <div className="flex items-center gap-3 px-6 py-5 border-b border-white/10">
+        <div className="flex items-center gap-3 px-6 py-5 border-b border-slate-200 dark:border-white/10">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-500 to-purple-600 flex items-center justify-center shadow-lg">
             <Home size={18} className="text-white" />
           </div>
           <div>
-            <p className="text-sm font-bold text-white">FinanceHome</p>
-            <p className="text-xs text-white/40">Family Finance</p>
+            <p className="text-sm font-bold text-slate-900 dark:text-white">FinanceHome</p>
+            <p className="text-xs text-slate-400 dark:text-white/40">Family Finance</p>
           </div>
         </div>
 
@@ -52,15 +52,15 @@ export default function Sidebar({ isOpen, onClose }) {
               {RELATIONSHIP_AVATARS[user?.relationship] || '👤'}
             </div>
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-white truncate">{user?.name || 'User'}</p>
-              <p className="text-xs text-white/40 truncate">{user?.relationship || 'Member'}</p>
+              <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{user?.name || 'User'}</p>
+              <p className="text-xs text-slate-400 dark:text-white/40 truncate">{user?.relationship || 'Member'}</p>
             </div>
           </div>
         </div>
 
         {/* Nav */}
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-          <p className="text-xs font-semibold text-white/30 uppercase tracking-wider px-3 mb-3">Menu</p>
+          <p className="text-xs font-semibold text-slate-400 dark:text-white/30 uppercase tracking-wider px-3 mb-3">Menu</p>
           {navItems.map(({ path, icon: Icon, label }) => (
             <NavLink
               key={path}
@@ -70,14 +70,14 @@ export default function Sidebar({ isOpen, onClose }) {
                 flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium
                 transition-all duration-200 group
                 ${isActive
-                  ? 'bg-gradient-to-r from-primary-600/30 to-purple-600/20 text-white border border-primary-500/30'
-                  : 'text-white/60 hover:text-white hover:bg-white/5'
+                  ? 'bg-gradient-to-r from-primary-600/30 to-purple-600/20 text-slate-900 dark:text-white border border-primary-500/30'
+                  : 'text-slate-500 dark:text-white/60 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/5'
                 }
               `}
             >
               {({ isActive }) => (
                 <>
-                  <span className={`flex-shrink-0 ${isActive ? 'text-primary-400' : 'text-white/40 group-hover:text-white/70'}`}>
+                  <span className={`flex-shrink-0 ${isActive ? 'text-primary-500 dark:text-primary-400' : 'text-slate-400 dark:text-white/40 group-hover:text-slate-600 dark:group-hover:text-white/70'}`}>
                     <Icon size={18} />
                   </span>
                   {label}
@@ -89,11 +89,11 @@ export default function Sidebar({ isOpen, onClose }) {
         </nav>
 
         {/* Logout */}
-        <div className="p-3 border-t border-white/10">
+        <div className="p-3 border-t border-slate-200 dark:border-white/10">
           <button
             onClick={logout}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium
-                       text-red-400/80 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200"
+                       text-red-500/80 dark:text-red-400/80 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all duration-200"
           >
             <LogOut size={18} />
             Sign Out

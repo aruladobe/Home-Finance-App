@@ -24,7 +24,7 @@ const emptyForm = {
 const STATUS_STYLES = {
   active: 'bg-emerald-500/20 text-emerald-400',
   matured: 'bg-blue-500/20 text-blue-400',
-  withdrawn: 'bg-gray-500/20 text-gray-400',
+  withdrawn: 'bg-slate-500/20 text-slate-400',
 };
 
 export default function InvestmentPage() {
@@ -101,7 +101,7 @@ export default function InvestmentPage() {
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2 flex-wrap">
-          <Filter size={15} className="text-white/40" />
+          <Filter size={15} className="text-slate-400 dark:text-white/40" />
           <select className="select-field w-auto text-sm py-2" value={filterType} onChange={e => setFilterType(e.target.value)}>
             <option value="">All Types</option>
             {INV_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
@@ -119,19 +119,19 @@ export default function InvestmentPage() {
       <div className="glass-card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="border-b border-white/10">
+            <thead className="border-b border-slate-200 dark:border-white/10">
               <tr>
-                <th onClick={() => toggle('type')} className="table-header text-left px-5 py-4 cursor-pointer select-none hover:text-white transition-colors">
+                <th onClick={() => toggle('type')} className="table-header text-left px-5 py-4 cursor-pointer select-none hover:text-slate-900 dark:hover:text-white transition-colors">
                   <span className="flex items-center">Type <SortIcon col="type" sortKey={sortKey} sortDir={sortDir} /></span>
                 </th>
-                <th onClick={() => toggle('status')} className="table-header text-left px-5 py-4 hidden sm:table-cell cursor-pointer select-none hover:text-white transition-colors">
+                <th onClick={() => toggle('status')} className="table-header text-left px-5 py-4 hidden sm:table-cell cursor-pointer select-none hover:text-slate-900 dark:hover:text-white transition-colors">
                   <span className="flex items-center">Status <SortIcon col="status" sortKey={sortKey} sortDir={sortDir} /></span>
                 </th>
                 <th className="table-header text-left px-5 py-4 hidden md:table-cell">Effective Range</th>
-                <th onClick={() => toggle('amount')} className="table-header text-right px-5 py-4 cursor-pointer select-none hover:text-white transition-colors">
+                <th onClick={() => toggle('amount')} className="table-header text-right px-5 py-4 cursor-pointer select-none hover:text-slate-900 dark:hover:text-white transition-colors">
                   <span className="flex items-center justify-end">Invested <SortIcon col="amount" sortKey={sortKey} sortDir={sortDir} /></span>
                 </th>
-                <th onClick={() => toggle('actualReturns')} className="table-header text-right px-5 py-4 hidden lg:table-cell cursor-pointer select-none hover:text-white transition-colors">
+                <th onClick={() => toggle('actualReturns')} className="table-header text-right px-5 py-4 hidden lg:table-cell cursor-pointer select-none hover:text-slate-900 dark:hover:text-white transition-colors">
                   <span className="flex items-center justify-end">Returns <SortIcon col="actualReturns" sortKey={sortKey} sortDir={sortDir} /></span>
                 </th>
                 <th className="table-header text-right px-5 py-4 hidden xl:table-cell">Projected Remaining</th>
@@ -140,7 +140,7 @@ export default function InvestmentPage() {
             </thead>
             <tbody>
               {sorted.length === 0 ? (
-                <tr><td colSpan={7} className="px-5 py-16 text-center text-white/30">No investments found. Start investing today!</td></tr>
+                <tr><td colSpan={7} className="px-5 py-16 text-center text-slate-400 dark:text-white/30">No investments found. Start investing today!</td></tr>
               ) : sorted.map(item => {
                 const proj = item.effectiveFrom
                   ? calculateProjection(item.amount, item.period, item.effectiveFrom, item.effectiveTo)
@@ -150,21 +150,21 @@ export default function InvestmentPage() {
                     <td className="px-5 py-3.5">
                       <div className="flex items-center gap-2">
                         <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: INVESTMENT_COLORS[item.type] || '#6366f1' }} />
-                        <span className="text-sm text-white/80">{item.type}</span>
+                        <span className="text-sm text-slate-700 dark:text-white/80">{item.type}</span>
                       </div>
                     </td>
                     <td className="px-5 py-3.5 hidden sm:table-cell">
-                      <span className={`badge capitalize ${STATUS_STYLES[item.status] || 'bg-gray-500/20 text-gray-400'}`}>{item.status}</span>
+                      <span className={`badge capitalize ${STATUS_STYLES[item.status] || 'bg-slate-500/20 text-slate-400'}`}>{item.status}</span>
                     </td>
                     <td className="px-5 py-3.5 hidden md:table-cell">
                       {item.effectiveFrom ? (
-                        <div className="flex items-center gap-1 text-xs text-white/50">
+                        <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-white/50">
                           <CalendarRange size={12} className="text-blue-400 flex-shrink-0" />
                           {format(new Date(item.effectiveFrom), 'dd MMM yy')}
                           {item.effectiveTo && <> → {format(new Date(item.effectiveTo), 'dd MMM yy')}</>}
                           {!item.effectiveTo && <span className="text-purple-400">→ ongoing</span>}
                         </div>
-                      ) : <span className="text-white/25 text-xs">—</span>}
+                      ) : <span className="text-slate-300 dark:text-white/25 text-xs">—</span>}
                     </td>
                     <td className="px-5 py-3.5 text-right font-semibold text-investment">{formatCurrency(item.amount)}</td>
                     <td className="px-5 py-3.5 hidden lg:table-cell text-right">
@@ -174,15 +174,15 @@ export default function InvestmentPage() {
                     </td>
                     <td className="px-5 py-3.5 hidden xl:table-cell text-right">
                       {proj ? (
-                        <span className={`text-sm font-medium ${proj.remainingAmount > 0 ? 'text-yellow-400' : 'text-white/30'}`}>
+                        <span className={`text-sm font-medium ${proj.remainingAmount > 0 ? 'text-yellow-400' : 'text-slate-300 dark:text-white/30'}`}>
                           {proj.remainingAmount !== null ? formatCurrency(proj.remainingAmount) : '∞'}
                         </span>
-                      ) : <span className="text-white/25 text-xs">—</span>}
+                      ) : <span className="text-slate-300 dark:text-white/25 text-xs">—</span>}
                     </td>
                     <td className="px-5 py-3.5 text-right">
                       <div className="flex items-center justify-end gap-1">
-                        <button onClick={() => openEdit(item)} className="p-1.5 rounded-lg hover:bg-white/10 text-white/40 hover:text-primary-400 transition-colors"><Edit2 size={14} /></button>
-                        <button onClick={() => handleDelete(item._id || item.id)} className="p-1.5 rounded-lg hover:bg-red-500/10 text-white/40 hover:text-red-400 transition-colors"><Trash2 size={14} /></button>
+                        <button onClick={() => openEdit(item)} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400 dark:text-white/40 hover:text-primary-500 dark:hover:text-primary-400 transition-colors"><Edit2 size={14} /></button>
+                        <button onClick={() => handleDelete(item._id || item.id)} className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 text-slate-400 dark:text-white/40 hover:text-red-500 dark:hover:text-red-400 transition-colors"><Trash2 size={14} /></button>
                       </div>
                     </td>
                   </tr>
@@ -223,12 +223,11 @@ export default function InvestmentPage() {
               <input type="date" className="input-field" value={form.maturityDate} onChange={setField('maturityDate')} />
             </div>
 
-            {/* Effective Date Range */}
             <div className="col-span-2">
               <div className="flex items-center gap-2 mb-2">
                 <CalendarRange size={14} className="text-blue-400" />
-                <span className="text-sm font-medium text-white/70">Effective Date Range</span>
-                <span className="text-xs text-white/30">(for projection of recurring contributions)</span>
+                <span className="text-sm font-medium text-slate-600 dark:text-white/70">Effective Date Range</span>
+                <span className="text-xs text-slate-400 dark:text-white/30">(for projection of recurring contributions)</span>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -236,7 +235,7 @@ export default function InvestmentPage() {
                   <input type="date" className="input-field" value={form.effectiveFrom} onChange={setField('effectiveFrom')} required />
                 </div>
                 <div>
-                  <label className="label">To <span className="text-white/30">(blank = ongoing)</span></label>
+                  <label className="label">To <span className="text-slate-400 dark:text-white/30">(blank = ongoing)</span></label>
                   <input type="date" className="input-field" value={form.effectiveTo} min={form.effectiveFrom || undefined} onChange={setField('effectiveTo')} />
                 </div>
               </div>
@@ -267,7 +266,6 @@ export default function InvestmentPage() {
             </div>
           </div>
 
-          {/* Live Projection */}
           {form.amount && form.effectiveFrom && (
             <ProjectionPanel
               amount={form.amount}

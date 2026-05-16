@@ -42,13 +42,13 @@ export default function Signup() {
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-500 to-purple-600 shadow-2xl shadow-primary-900/50 mb-4">
             <Home size={26} className="text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">Create Account</h1>
-          <p className="text-white/50">Start managing your family finances today</p>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Create Account</h1>
+          <p className="text-slate-500 dark:text-white/50">Start managing your family finances today</p>
         </div>
 
         <div className="glass-card p-8">
           {error && (
-            <div className="mb-4 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
+            <div className="mb-4 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 dark:text-red-400 text-sm">
               {error}
             </div>
           )}
@@ -87,7 +87,7 @@ export default function Signup() {
                   <button
                     type="button"
                     onClick={() => setShowPw(!showPw)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/70 transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/30 hover:text-slate-600 dark:hover:text-white/70 transition-colors"
                   >
                     {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
@@ -112,9 +112,9 @@ export default function Signup() {
           </form>
         </div>
 
-        <p className="text-center mt-6 text-white/50 text-sm">
+        <p className="text-center mt-6 text-slate-500 dark:text-white/50 text-sm">
           Already have an account?{' '}
-          <Link to="/login" className="text-primary-400 hover:text-primary-300 font-medium transition-colors">
+          <Link to="/login" className="text-primary-500 dark:text-primary-400 hover:text-primary-600 dark:hover:text-primary-300 font-medium transition-colors">
             Sign In
           </Link>
         </p>

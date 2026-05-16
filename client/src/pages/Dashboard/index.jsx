@@ -5,6 +5,7 @@ import {
 } from 'recharts';
 import { TrendingUp, TrendingDown, Wallet, PiggyBank, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { useFinance } from '../../context/FinanceContext';
+import { useTheme } from '../../context/ThemeContext';
 import StatCard from '../../components/common/StatCard';
 import {
   formatCurrency, formatCurrencyCompact, filterByPeriod, filterByFY, sumAmounts, calculateProfit,
@@ -16,7 +17,7 @@ const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
     <div className="glass-card p-3 text-xs">
-      <p className="text-white/60 mb-2">{label}</p>
+      <p className="text-slate-500 dark:text-white/60 mb-2">{label}</p>
       {payload.map((entry, i) => (
         <p key={i} style={{ color: entry.color }} className="font-medium">
           {entry.name}: {formatCurrency(entry.value)}
@@ -28,6 +29,10 @@ const CustomTooltip = ({ active, payload, label }) => {
 
 export default function Dashboard() {
   const { income, expenses, investments, period, financialYear } = useFinance();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+  const gridColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)';
+  const tickColor = isDark ? 'rgba(255,255,255,0.4)' : 'rgba(100,116,139,0.75)';
 
   const filtered = useMemo(() => ({
     income: financialYear ? filterByFY(income, financialYear) : filterByPeriod(income, period),
@@ -102,9 +107,9 @@ export default function Dashboard() {
                   <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-              <XAxis dataKey="month" tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 11 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={v => formatCurrencyCompact(v)} />
+              <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
+              <XAxis dataKey="month" tick={{ fill: tickColor, fontSize: 11 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill: tickColor, fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={v => formatCurrencyCompact(v)} />
               <Tooltip content={<CustomTooltip />} />
               <Area type="monotone" dataKey="Income" stroke="#10b981" strokeWidth={2} fill="url(#incomeGrad)" />
               <Area type="monotone" dataKey="Expenses" stroke="#ef4444" strokeWidth={2} fill="url(#expenseGrad)" />
@@ -133,15 +138,15 @@ export default function Dashboard() {
                   <div key={item.name} className="flex items-center justify-between text-xs">
                     <div className="flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full" style={{ backgroundColor: CATEGORY_COLORS[item.name] || '#6366f1' }} />
-                      <span className="text-white/60">{item.name}</span>
+                      <span className="text-slate-500 dark:text-white/60">{item.name}</span>
                     </div>
-                    <span className="text-white font-medium">{formatCurrency(item.value)}</span>
+                    <span className="text-slate-900 dark:text-white font-medium">{formatCurrency(item.value)}</span>
                   </div>
                 ))}
               </div>
             </>
           ) : (
-            <div className="h-48 flex items-center justify-center text-white/30 text-sm">No expense data</div>
+            <div className="h-48 flex items-center justify-center text-slate-400 dark:text-white/30 text-sm">No expense data</div>
           )}
         </div>
       </div>
@@ -153,14 +158,14 @@ export default function Dashboard() {
           <h3 className="section-title mb-4">Monthly Profit Overview</h3>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={monthlyData} margin={{ top: 5, right: 10, bottom: 0, left: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-              <XAxis dataKey="month" tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 11 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={v => formatCurrencyCompact(v)} />
+              <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
+              <XAxis dataKey="month" tick={{ fill: tickColor, fontSize: 11 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill: tickColor, fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={v => formatCurrencyCompact(v)} />
               <Tooltip content={<CustomTooltip />} />
               <Bar dataKey="Income" fill="#10b981" radius={[4,4,0,0]} />
               <Bar dataKey="Expenses" fill="#ef4444" radius={[4,4,0,0]} />
               <Bar dataKey="Profit" fill="#6366f1" radius={[4,4,0,0]} />
-              <Legend formatter={(val) => <span className="text-white/60 text-xs">{val}</span>} />
+              <Legend formatter={(val) => <span className="text-slate-500 dark:text-white/60 text-xs">{val}</span>} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -186,15 +191,15 @@ export default function Dashboard() {
                   <div key={item.name} className="flex items-center justify-between text-xs">
                     <div className="flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full" style={{ backgroundColor: INCOME_COLORS[item.name] || '#6366f1' }} />
-                      <span className="text-white/60">{item.name}</span>
+                      <span className="text-slate-500 dark:text-white/60">{item.name}</span>
                     </div>
-                    <span className="text-white font-medium">{formatCurrency(item.value)}</span>
+                    <span className="text-slate-900 dark:text-white font-medium">{formatCurrency(item.value)}</span>
                   </div>
                 ))}
               </div>
             </>
           ) : (
-            <div className="h-48 flex items-center justify-center text-white/30 text-sm">No income data</div>
+            <div className="h-48 flex items-center justify-center text-slate-400 dark:text-white/30 text-sm">No income data</div>
           )}
         </div>
       </div>
@@ -206,7 +211,7 @@ export default function Dashboard() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-white/10">
+                <tr className="border-b border-slate-200 dark:border-white/10">
                   <th className="table-header text-left pb-3">Type</th>
                   <th className="table-header text-left pb-3 hidden sm:table-cell">Category / Source</th>
                   <th className="table-header text-left pb-3 hidden md:table-cell">Member</th>
@@ -224,17 +229,17 @@ export default function Dashboard() {
                             ? <ArrowUpRight size={14} className="text-income" />
                             : <ArrowDownRight size={14} className="text-expense" />}
                         </div>
-                        <span className="text-sm text-white capitalize">{tx._type}</span>
+                        <span className="text-sm text-slate-900 dark:text-white capitalize">{tx._type}</span>
                       </div>
                     </td>
                     <td className="py-3 pr-4 hidden sm:table-cell">
-                      <span className="text-sm text-white/70">{tx.category || tx.type}</span>
+                      <span className="text-sm text-slate-600 dark:text-white/70">{tx.category || tx.type}</span>
                     </td>
                     <td className="py-3 pr-4 hidden md:table-cell">
-                      <span className="text-sm text-white/50">{tx.familyMemberName || 'Self'}</span>
+                      <span className="text-sm text-slate-500 dark:text-white/50">{tx.familyMemberName || 'Self'}</span>
                     </td>
                     <td className="py-3 pr-4 hidden lg:table-cell">
-                      <span className="text-sm text-white/40">{tx.date ? format(new Date(tx.date), 'dd MMM yyyy') : '-'}</span>
+                      <span className="text-sm text-slate-400 dark:text-white/40">{tx.date ? format(new Date(tx.date), 'dd MMM yyyy') : '-'}</span>
                     </td>
                     <td className={`py-3 text-right font-semibold text-sm ${tx._type === 'income' ? 'text-income' : 'text-expense'}`}>
                       {tx._type === 'income' ? '+' : '-'}{formatCurrency(tx.amount)}
@@ -245,7 +250,7 @@ export default function Dashboard() {
             </table>
           </div>
         ) : (
-          <div className="py-12 text-center text-white/30">
+          <div className="py-12 text-center text-slate-400 dark:text-white/30">
             <p>No transactions yet. Start by adding income or expenses.</p>
           </div>
         )}

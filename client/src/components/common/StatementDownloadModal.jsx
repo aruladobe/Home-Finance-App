@@ -69,7 +69,7 @@ export default function StatementDownloadModal({ isOpen, onClose, income, expens
                 className={`px-3 py-2 rounded-xl text-xs font-medium transition-all border ${
                   preset === opt.value
                     ? 'bg-primary-600 border-primary-500 text-white shadow-lg shadow-primary-900/30'
-                    : 'border-white/10 text-white/50 hover:text-white hover:border-white/30 hover:bg-white/5'
+                    : 'border-slate-200 dark:border-white/10 text-slate-500 dark:text-white/50 hover:text-slate-900 dark:hover:text-white hover:border-slate-300 dark:hover:border-white/30 hover:bg-slate-50 dark:hover:bg-white/5'
                 }`}
               >
                 {opt.label}
@@ -100,9 +100,9 @@ export default function StatementDownloadModal({ isOpen, onClose, income, expens
 
         {/* Resolved range display */}
         {isCustomValid && (
-          <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 border border-white/10">
+          <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10">
             <Calendar size={13} className="text-primary-400 flex-shrink-0" />
-            <span className="text-xs text-white/60">
+            <span className="text-xs text-slate-500 dark:text-white/60">
               {format(range.from, 'dd MMM yyyy')} — {format(range.to, 'dd MMM yyyy')}
             </span>
           </div>
@@ -119,8 +119,8 @@ export default function StatementDownloadModal({ isOpen, onClose, income, expens
             ].map(s => (
               <div key={s.label} className={`glass-card p-3 rounded-xl border ${s.border}`}>
                 <p className={`text-xs font-semibold ${s.color}`}>{s.label}</p>
-                <p className="text-white font-bold text-sm mt-1">{formatCurrency(s.total)}</p>
-                <p className="text-white/40 text-xs">{s.count} entries</p>
+                <p className="text-slate-900 dark:text-white font-bold text-sm mt-1">{formatCurrency(s.total)}</p>
+                <p className="text-slate-400 dark:text-white/40 text-xs">{s.count} entries</p>
               </div>
             ))}
           </div>
@@ -134,30 +134,30 @@ export default function StatementDownloadModal({ isOpen, onClose, income, expens
               onClick={() => setFileFormat('pdf')}
               className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
                 fileFormat === 'pdf'
-                  ? 'bg-primary-600/20 border-primary-500/50 text-white'
-                  : 'border-white/10 text-white/40 hover:text-white hover:border-white/30'
+                  ? 'bg-primary-600/20 border-primary-500/50 text-slate-900 dark:text-white'
+                  : 'border-slate-200 dark:border-white/10 text-slate-400 dark:text-white/40 hover:text-slate-900 dark:hover:text-white hover:border-slate-300 dark:hover:border-white/30'
               }`}
             >
-              <FileText size={20} className={fileFormat === 'pdf' ? 'text-primary-400' : ''} />
+              <FileText size={20} className={fileFormat === 'pdf' ? 'text-primary-500 dark:text-primary-400' : ''} />
               <div className="text-left">
                 <p className="text-sm font-medium">PDF</p>
-                <p className="text-xs text-white/40">Formatted statement</p>
+                <p className="text-xs text-slate-400 dark:text-white/40">Formatted statement</p>
               </div>
-              {fileFormat === 'pdf' && <CheckCircle size={14} className="ml-auto text-primary-400" />}
+              {fileFormat === 'pdf' && <CheckCircle size={14} className="ml-auto text-primary-500 dark:text-primary-400" />}
             </button>
 
             <button
               onClick={() => setFileFormat('csv')}
               className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
                 fileFormat === 'csv'
-                  ? 'bg-green-600/20 border-green-500/50 text-white'
-                  : 'border-white/10 text-white/40 hover:text-white hover:border-white/30'
+                  ? 'bg-green-600/20 border-green-500/50 text-slate-900 dark:text-white'
+                  : 'border-slate-200 dark:border-white/10 text-slate-400 dark:text-white/40 hover:text-slate-900 dark:hover:text-white hover:border-slate-300 dark:hover:border-white/30'
               }`}
             >
               <FileSpreadsheet size={20} className={fileFormat === 'csv' ? 'text-green-400' : ''} />
               <div className="text-left">
                 <p className="text-sm font-medium">CSV</p>
-                <p className="text-xs text-white/40">Spreadsheet / Excel</p>
+                <p className="text-xs text-slate-400 dark:text-white/40">Spreadsheet / Excel</p>
               </div>
               {fileFormat === 'csv' && <CheckCircle size={14} className="ml-auto text-green-400" />}
             </button>
