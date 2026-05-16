@@ -1,10 +1,11 @@
 import { useState, useMemo } from 'react';
-import { Plus, Edit2, Trash2, TrendingUp, Filter } from 'lucide-react';
+import { Plus, Edit2, Trash2, TrendingUp, Filter, CalendarRange } from 'lucide-react';
 import { useSortable, SortIcon } from '../../hooks/useSortable';
 import { useFinance } from '../../context/FinanceContext';
 import Modal from '../../components/common/Modal';
 import StatCard from '../../components/common/StatCard';
-import { formatCurrency, filterByPeriod, sumAmounts } from '../../utils/calculations';
+import ProjectionPanel from '../../components/common/ProjectionPanel';
+import { formatCurrency, filterByPeriod, sumAmounts, calculateProjection } from '../../utils/calculations';
 import { format } from 'date-fns';
 
 const INCOME_TYPES = ['Salary', 'Earning', 'Interest', 'House Rent', 'Other Source'];
@@ -18,7 +19,13 @@ const TYPE_COLORS = {
   'Other Source': 'bg-gray-500/20 text-gray-400',
 };
 
-const emptyForm = { type: 'Salary', amount: '', description: '', date: new Date().toISOString().split('T')[0], period: 'monthly', familyMemberId: '', familyMemberName: '' };
+const today = new Date().toISOString().split('T')[0];
+const emptyForm = {
+  type: 'Salary', amount: '', description: '',
+  date: today, period: 'monthly',
+  effectiveFrom: today, effectiveTo: '',
+  familyMemberId: '', familyMemberName: ''
+};
 
 export default function IncomePage() {
   const { income, addIncome, updateIncome, deleteIncome, familyMembers, period } = useFinance();
@@ -48,8 +55,10 @@ export default function IncomePage() {
     setEditItem(item);
     setForm({
       type: item.type, amount: item.amount, description: item.description || '',
-      date: item.date ? new Date(item.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+      date: item.date ? new Date(item.date).toISOString().split('T')[0] : today,
       period: item.period || 'monthly',
+      effectiveFrom: item.effectiveFrom ? new Date(item.effectiveFrom).toISOString().split('T')[0] : today,
+      effectiveTo: item.effectiveTo ? new Date(item.effectiveTo).toISOString().split('T')[0] : '',
       familyMemberId: item.familyMemberId || '',
       familyMemberName: item.familyMemberName || '',
     });
@@ -60,7 +69,11 @@ export default function IncomePage() {
     e.preventDefault();
     setSaving(true);
     const member = familyMembers.find(m => m._id === form.familyMemberId || m.id === form.familyMemberId);
-    const payload = { ...form, amount: Number(form.amount), familyMemberName: member?.name || '' };
+    const payload = {
+      ...form, amount: Number(form.amount),
+      familyMemberName: member?.name || '',
+      effectiveTo: form.effectiveTo || null,
+    };
     try {
       if (editItem) await updateIncome(editItem._id || editItem.id, payload);
       else await addIncome(payload);
@@ -114,21 +127,22 @@ export default function IncomePage() {
                 <th onClick={() => toggle('period')} className="table-header text-left px-5 py-4 hidden md:table-cell cursor-pointer select-none hover:text-white transition-colors">
                   <span className="flex items-center">Period <SortIcon col="period" sortKey={sortKey} sortDir={sortDir} /></span>
                 </th>
-                <th onClick={() => toggle('date')} className="table-header text-left px-5 py-4 hidden lg:table-cell cursor-pointer select-none hover:text-white transition-colors">
-                  <span className="flex items-center">Date <SortIcon col="date" sortKey={sortKey} sortDir={sortDir} /></span>
-                </th>
-                <th className="table-header text-left px-5 py-4 hidden xl:table-cell">Description</th>
+                <th className="table-header text-left px-5 py-4 hidden lg:table-cell">Effective Range</th>
                 <th onClick={() => toggle('amount')} className="table-header text-right px-5 py-4 cursor-pointer select-none hover:text-white transition-colors">
                   <span className="flex items-center justify-end">Amount <SortIcon col="amount" sortKey={sortKey} sortDir={sortDir} /></span>
                 </th>
+                <th className="table-header text-right px-5 py-4 hidden xl:table-cell">Remaining</th>
                 <th className="table-header text-right px-5 py-4">Actions</th>
               </tr>
             </thead>
             <tbody>
               {sorted.length === 0 ? (
                 <tr><td colSpan={7} className="px-5 py-16 text-center text-white/30">No income records found. Add your first entry!</td></tr>
-              ) : (
-                sorted.map(item => (
+              ) : sorted.map(item => {
+                const proj = item.effectiveFrom
+                  ? calculateProjection(item.amount, item.period, item.effectiveFrom, item.effectiveTo)
+                  : null;
+                return (
                   <tr key={item._id || item.id} className="table-row">
                     <td className="px-5 py-3.5">
                       <span className={`badge ${TYPE_COLORS[item.type] || 'bg-gray-500/20 text-gray-400'}`}>{item.type}</span>
@@ -137,30 +151,39 @@ export default function IncomePage() {
                     <td className="px-5 py-3.5 hidden md:table-cell">
                       <span className="badge bg-white/10 text-white/60 capitalize">{item.period}</span>
                     </td>
-                    <td className="px-5 py-3.5 hidden lg:table-cell text-sm text-white/50">
-                      {item.date ? format(new Date(item.date), 'dd MMM yyyy') : '-'}
+                    <td className="px-5 py-3.5 hidden lg:table-cell">
+                      {item.effectiveFrom ? (
+                        <div className="flex items-center gap-1 text-xs text-white/50">
+                          <CalendarRange size={12} className="text-primary-400 flex-shrink-0" />
+                          {format(new Date(item.effectiveFrom), 'dd MMM yy')}
+                          {item.effectiveTo && <> → {format(new Date(item.effectiveTo), 'dd MMM yy')}</>}
+                          {!item.effectiveTo && <span className="text-purple-400">→ ongoing</span>}
+                        </div>
+                      ) : <span className="text-white/25 text-xs">—</span>}
                     </td>
-                    <td className="px-5 py-3.5 hidden xl:table-cell text-sm text-white/50 max-w-xs truncate">{item.description || '-'}</td>
                     <td className="px-5 py-3.5 text-right font-semibold text-income">{formatCurrency(item.amount)}</td>
+                    <td className="px-5 py-3.5 hidden xl:table-cell text-right">
+                      {proj ? (
+                        <span className={`text-sm font-medium ${proj.remainingAmount > 0 ? 'text-yellow-400' : 'text-white/30'}`}>
+                          {proj.remainingAmount !== null ? formatCurrency(proj.remainingAmount) : '∞'}
+                        </span>
+                      ) : <span className="text-white/25 text-xs">—</span>}
+                    </td>
                     <td className="px-5 py-3.5 text-right">
                       <div className="flex items-center justify-end gap-1">
-                        <button onClick={() => openEdit(item)} className="p-1.5 rounded-lg hover:bg-white/10 text-white/40 hover:text-primary-400 transition-colors">
-                          <Edit2 size={14} />
-                        </button>
-                        <button onClick={() => handleDelete(item._id || item.id)} className="p-1.5 rounded-lg hover:bg-red-500/10 text-white/40 hover:text-red-400 transition-colors">
-                          <Trash2 size={14} />
-                        </button>
+                        <button onClick={() => openEdit(item)} className="p-1.5 rounded-lg hover:bg-white/10 text-white/40 hover:text-primary-400 transition-colors"><Edit2 size={14} /></button>
+                        <button onClick={() => handleDelete(item._id || item.id)} className="p-1.5 rounded-lg hover:bg-red-500/10 text-white/40 hover:text-red-400 transition-colors"><Trash2 size={14} /></button>
                       </div>
                     </td>
                   </tr>
-                ))
-              )}
+                );
+              })}
             </tbody>
           </table>
         </div>
       </div>
 
-      <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={editItem ? 'Edit Income' : 'Add Income'}>
+      <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={editItem ? 'Edit Income' : 'Add Income'} size="lg">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -170,12 +193,12 @@ export default function IncomePage() {
               </select>
             </div>
             <div>
-              <label className="label">Amount *</label>
+              <label className="label">Amount (₹) *</label>
               <input type="number" className="input-field" placeholder="0.00" min="0" step="0.01"
                 value={form.amount} onChange={setField('amount')} required />
             </div>
             <div>
-              <label className="label">Date *</label>
+              <label className="label">Transaction Date *</label>
               <input type="date" className="input-field" value={form.date} onChange={setField('date')} required />
             </div>
             <div>
@@ -184,6 +207,28 @@ export default function IncomePage() {
                 {PERIODS.map(p => <option key={p} value={p} className="capitalize">{p}</option>)}
               </select>
             </div>
+
+            {/* Effective Date Range */}
+            <div className="col-span-2">
+              <div className="flex items-center gap-2 mb-2">
+                <CalendarRange size={14} className="text-primary-400" />
+                <span className="text-sm font-medium text-white/70">Effective Date Range</span>
+                <span className="text-xs text-white/30">(for projection calculation)</span>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="label">From *</label>
+                  <input type="date" className="input-field" value={form.effectiveFrom} onChange={setField('effectiveFrom')} required />
+                </div>
+                <div>
+                  <label className="label">To <span className="text-white/30">(leave blank = ongoing)</span></label>
+                  <input type="date" className="input-field" value={form.effectiveTo}
+                    min={form.effectiveFrom || undefined}
+                    onChange={setField('effectiveTo')} />
+                </div>
+              </div>
+            </div>
+
             <div className="col-span-2">
               <label className="label">Family Member</label>
               <select className="select-field" value={form.familyMemberId} onChange={setField('familyMemberId')}>
@@ -196,6 +241,18 @@ export default function IncomePage() {
               <input type="text" className="input-field" placeholder="Optional note..." value={form.description} onChange={setField('description')} />
             </div>
           </div>
+
+          {/* Live Projection */}
+          {form.amount && form.effectiveFrom && (
+            <ProjectionPanel
+              amount={form.amount}
+              period={form.period}
+              effectiveFrom={form.effectiveFrom}
+              effectiveTo={form.effectiveTo}
+              accentColor="text-emerald-400"
+            />
+          )}
+
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={() => setModalOpen(false)} className="btn-secondary flex-1">Cancel</button>
             <button type="submit" disabled={saving} className="btn-primary flex-1">

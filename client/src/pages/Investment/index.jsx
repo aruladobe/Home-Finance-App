@@ -1,20 +1,23 @@
 import { useState, useMemo } from 'react';
-import { Plus, Edit2, Trash2, Wallet, TrendingUp, Filter } from 'lucide-react';
+import { Plus, Edit2, Trash2, Wallet, TrendingUp, Filter, CalendarRange } from 'lucide-react';
 import { useSortable, SortIcon } from '../../hooks/useSortable';
 import { useFinance } from '../../context/FinanceContext';
 import Modal from '../../components/common/Modal';
 import StatCard from '../../components/common/StatCard';
-import { formatCurrency, filterByPeriod, sumAmounts, INVESTMENT_COLORS } from '../../utils/calculations';
+import ProjectionPanel from '../../components/common/ProjectionPanel';
+import { formatCurrency, filterByPeriod, sumAmounts, INVESTMENT_COLORS, calculateProjection } from '../../utils/calculations';
 import { format } from 'date-fns';
 
-const INV_TYPES = ['Stocks','Mutual Funds','Fixed Deposit','Real Estate','Gold','Crypto','PPF','NPS','Other'];
+const INV_TYPES = ['Stocks','Mutual Funds','Fixed Deposit','Real Estate','Gold','Crypto','PPF','NPS','Insurance','Other'];
 const PERIODS = ['daily','monthly','yearly'];
 const STATUSES = ['active','matured','withdrawn'];
 
+const today = new Date().toISOString().split('T')[0];
 const emptyForm = {
   type: 'Mutual Funds', amount: '', expectedReturns: '', actualReturns: '',
-  description: '', date: new Date().toISOString().split('T')[0],
-  maturityDate: '', period: 'monthly', status: 'active',
+  description: '', date: today, maturityDate: '',
+  period: 'monthly', status: 'active',
+  effectiveFrom: today, effectiveTo: '',
   familyMemberId: '', familyMemberName: ''
 };
 
@@ -49,11 +52,14 @@ export default function InvestmentPage() {
   const openEdit = (item) => {
     setEditItem(item);
     setForm({
-      type: item.type, amount: item.amount, expectedReturns: item.expectedReturns || '',
-      actualReturns: item.actualReturns || '', description: item.description || '',
-      date: item.date ? new Date(item.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+      type: item.type, amount: item.amount,
+      expectedReturns: item.expectedReturns || '', actualReturns: item.actualReturns || '',
+      description: item.description || '',
+      date: item.date ? new Date(item.date).toISOString().split('T')[0] : today,
       maturityDate: item.maturityDate ? new Date(item.maturityDate).toISOString().split('T')[0] : '',
       period: item.period || 'monthly', status: item.status || 'active',
+      effectiveFrom: item.effectiveFrom ? new Date(item.effectiveFrom).toISOString().split('T')[0] : today,
+      effectiveTo: item.effectiveTo ? new Date(item.effectiveTo).toISOString().split('T')[0] : '',
       familyMemberId: item.familyMemberId || '', familyMemberName: item.familyMemberName || '',
     });
     setModalOpen(true);
@@ -63,7 +69,14 @@ export default function InvestmentPage() {
     e.preventDefault();
     setSaving(true);
     const member = familyMembers.find(m => m._id === form.familyMemberId || m.id === form.familyMemberId);
-    const payload = { ...form, amount: Number(form.amount), expectedReturns: Number(form.expectedReturns) || 0, actualReturns: Number(form.actualReturns) || 0, familyMemberName: member?.name || '' };
+    const payload = {
+      ...form,
+      amount: Number(form.amount),
+      expectedReturns: Number(form.expectedReturns) || 0,
+      actualReturns: Number(form.actualReturns) || 0,
+      familyMemberName: member?.name || '',
+      effectiveTo: form.effectiveTo || null,
+    };
     try {
       if (editItem) await updateInvestment(editItem._id || editItem.id, payload);
       else await addInvestment(payload);
@@ -114,26 +127,25 @@ export default function InvestmentPage() {
                 <th onClick={() => toggle('status')} className="table-header text-left px-5 py-4 hidden sm:table-cell cursor-pointer select-none hover:text-white transition-colors">
                   <span className="flex items-center">Status <SortIcon col="status" sortKey={sortKey} sortDir={sortDir} /></span>
                 </th>
-                <th onClick={() => toggle('familyMemberName')} className="table-header text-left px-5 py-4 hidden md:table-cell cursor-pointer select-none hover:text-white transition-colors">
-                  <span className="flex items-center">Member <SortIcon col="familyMemberName" sortKey={sortKey} sortDir={sortDir} /></span>
-                </th>
-                <th onClick={() => toggle('date')} className="table-header text-left px-5 py-4 hidden lg:table-cell cursor-pointer select-none hover:text-white transition-colors">
-                  <span className="flex items-center">Date <SortIcon col="date" sortKey={sortKey} sortDir={sortDir} /></span>
-                </th>
+                <th className="table-header text-left px-5 py-4 hidden md:table-cell">Effective Range</th>
                 <th onClick={() => toggle('amount')} className="table-header text-right px-5 py-4 cursor-pointer select-none hover:text-white transition-colors">
                   <span className="flex items-center justify-end">Invested <SortIcon col="amount" sortKey={sortKey} sortDir={sortDir} /></span>
                 </th>
-                <th onClick={() => toggle('actualReturns')} className="table-header text-right px-5 py-4 hidden xl:table-cell cursor-pointer select-none hover:text-white transition-colors">
+                <th onClick={() => toggle('actualReturns')} className="table-header text-right px-5 py-4 hidden lg:table-cell cursor-pointer select-none hover:text-white transition-colors">
                   <span className="flex items-center justify-end">Returns <SortIcon col="actualReturns" sortKey={sortKey} sortDir={sortDir} /></span>
                 </th>
+                <th className="table-header text-right px-5 py-4 hidden xl:table-cell">Projected Remaining</th>
                 <th className="table-header text-right px-5 py-4">Actions</th>
               </tr>
             </thead>
             <tbody>
               {sorted.length === 0 ? (
                 <tr><td colSpan={7} className="px-5 py-16 text-center text-white/30">No investments found. Start investing today!</td></tr>
-              ) : (
-                sorted.map(item => (
+              ) : sorted.map(item => {
+                const proj = item.effectiveFrom
+                  ? calculateProjection(item.amount, item.period, item.effectiveFrom, item.effectiveTo)
+                  : null;
+                return (
                   <tr key={item._id || item.id} className="table-row">
                     <td className="px-5 py-3.5">
                       <div className="flex items-center gap-2">
@@ -144,13 +156,28 @@ export default function InvestmentPage() {
                     <td className="px-5 py-3.5 hidden sm:table-cell">
                       <span className={`badge capitalize ${STATUS_STYLES[item.status] || 'bg-gray-500/20 text-gray-400'}`}>{item.status}</span>
                     </td>
-                    <td className="px-5 py-3.5 hidden md:table-cell text-sm text-white/50">{item.familyMemberName || 'Self'}</td>
-                    <td className="px-5 py-3.5 hidden lg:table-cell text-sm text-white/50">{item.date ? format(new Date(item.date), 'dd MMM yyyy') : '-'}</td>
+                    <td className="px-5 py-3.5 hidden md:table-cell">
+                      {item.effectiveFrom ? (
+                        <div className="flex items-center gap-1 text-xs text-white/50">
+                          <CalendarRange size={12} className="text-blue-400 flex-shrink-0" />
+                          {format(new Date(item.effectiveFrom), 'dd MMM yy')}
+                          {item.effectiveTo && <> → {format(new Date(item.effectiveTo), 'dd MMM yy')}</>}
+                          {!item.effectiveTo && <span className="text-purple-400">→ ongoing</span>}
+                        </div>
+                      ) : <span className="text-white/25 text-xs">—</span>}
+                    </td>
                     <td className="px-5 py-3.5 text-right font-semibold text-investment">{formatCurrency(item.amount)}</td>
-                    <td className="px-5 py-3.5 hidden xl:table-cell text-right">
+                    <td className="px-5 py-3.5 hidden lg:table-cell text-right">
                       <span className={Number(item.actualReturns) >= 0 ? 'text-income' : 'text-expense'}>
                         {formatCurrency(item.actualReturns || 0)}
                       </span>
+                    </td>
+                    <td className="px-5 py-3.5 hidden xl:table-cell text-right">
+                      {proj ? (
+                        <span className={`text-sm font-medium ${proj.remainingAmount > 0 ? 'text-yellow-400' : 'text-white/30'}`}>
+                          {proj.remainingAmount !== null ? formatCurrency(proj.remainingAmount) : '∞'}
+                        </span>
+                      ) : <span className="text-white/25 text-xs">—</span>}
                     </td>
                     <td className="px-5 py-3.5 text-right">
                       <div className="flex items-center justify-end gap-1">
@@ -159,8 +186,8 @@ export default function InvestmentPage() {
                       </div>
                     </td>
                   </tr>
-                ))
-              )}
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -176,15 +203,15 @@ export default function InvestmentPage() {
               </select>
             </div>
             <div>
-              <label className="label">Amount Invested *</label>
+              <label className="label">Amount Invested (₹) *</label>
               <input type="number" className="input-field" placeholder="0.00" min="0" step="0.01" value={form.amount} onChange={setField('amount')} required />
             </div>
             <div>
-              <label className="label">Expected Returns</label>
+              <label className="label">Expected Returns (₹)</label>
               <input type="number" className="input-field" placeholder="0.00" min="0" step="0.01" value={form.expectedReturns} onChange={setField('expectedReturns')} />
             </div>
             <div>
-              <label className="label">Actual Returns</label>
+              <label className="label">Actual Returns (₹)</label>
               <input type="number" className="input-field" placeholder="0.00" step="0.01" value={form.actualReturns} onChange={setField('actualReturns')} />
             </div>
             <div>
@@ -195,6 +222,26 @@ export default function InvestmentPage() {
               <label className="label">Maturity Date</label>
               <input type="date" className="input-field" value={form.maturityDate} onChange={setField('maturityDate')} />
             </div>
+
+            {/* Effective Date Range */}
+            <div className="col-span-2">
+              <div className="flex items-center gap-2 mb-2">
+                <CalendarRange size={14} className="text-blue-400" />
+                <span className="text-sm font-medium text-white/70">Effective Date Range</span>
+                <span className="text-xs text-white/30">(for projection of recurring contributions)</span>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="label">From *</label>
+                  <input type="date" className="input-field" value={form.effectiveFrom} onChange={setField('effectiveFrom')} required />
+                </div>
+                <div>
+                  <label className="label">To <span className="text-white/30">(blank = ongoing)</span></label>
+                  <input type="date" className="input-field" value={form.effectiveTo} min={form.effectiveFrom || undefined} onChange={setField('effectiveTo')} />
+                </div>
+              </div>
+            </div>
+
             <div>
               <label className="label">Status</label>
               <select className="select-field" value={form.status} onChange={setField('status')}>
@@ -219,6 +266,18 @@ export default function InvestmentPage() {
               <input type="text" className="input-field" placeholder="Investment details..." value={form.description} onChange={setField('description')} />
             </div>
           </div>
+
+          {/* Live Projection */}
+          {form.amount && form.effectiveFrom && (
+            <ProjectionPanel
+              amount={form.amount}
+              period={form.period}
+              effectiveFrom={form.effectiveFrom}
+              effectiveTo={form.effectiveTo}
+              accentColor="text-blue-400"
+            />
+          )}
+
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={() => setModalOpen(false)} className="btn-secondary flex-1">Cancel</button>
             <button type="submit" disabled={saving} className="btn-primary flex-1">

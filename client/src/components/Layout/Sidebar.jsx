@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard, TrendingUp, TrendingDown, Wallet,
-  PieChart, Users, LogOut, Home
+  PieChart, Users, LogOut, Home, Calculator
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -12,6 +12,7 @@ const navItems = [
   { path: '/investments', icon: Wallet, label: 'Investments' },
   { path: '/profit', icon: PieChart, label: 'Profit' },
   { path: '/users', icon: Users, label: 'User Management' },
+  { path: '/calculator', icon: Calculator, label: 'Calculator' },
 ];
 
 const RELATIONSHIP_AVATARS = {

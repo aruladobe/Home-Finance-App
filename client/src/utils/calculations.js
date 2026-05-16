@@ -1,4 +1,8 @@
-import { startOfMonth, endOfMonth, startOfYear, endOfYear, startOfDay, endOfDay, isWithinInterval, parseISO } from 'date-fns';
+import {
+  startOfMonth, endOfMonth, startOfYear, endOfYear, startOfDay, endOfDay,
+  isWithinInterval, parseISO, differenceInDays, differenceInMonths, differenceInYears,
+  isBefore, isAfter, min as dateMin, max as dateMax
+} from 'date-fns';
 
 export const formatCurrency = (amount, currency = '₹') =>
   `${currency}${Number(amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
@@ -65,6 +69,48 @@ export const groupByType = (items) => {
     groups[type] = (groups[type] || 0) + Number(item.amount || 0);
   });
   return Object.entries(groups).map(([name, value]) => ({ name, value }));
+};
+
+export const calculateProjection = (amount, period, effectiveFrom, effectiveTo) => {
+  if (!amount || !effectiveFrom) return null;
+  const amt = Number(amount);
+  const from = new Date(effectiveFrom);
+  const to = effectiveTo ? new Date(effectiveTo) : null;
+  const today = new Date();
+
+  if (isNaN(from.getTime())) return null;
+
+  const diffFn = period === 'daily' ? differenceInDays
+    : period === 'yearly' ? differenceInYears
+    : differenceInMonths;
+
+  const totalPeriods = to ? Math.max(0, diffFn(to, from)) : null;
+  const totalExpected = totalPeriods !== null ? totalPeriods * amt : null;
+
+  let elapsedPeriods = 0;
+  if (isAfter(today, from)) {
+    const elapsedEnd = to ? dateMin([today, to]) : today;
+    elapsedPeriods = Math.max(0, diffFn(elapsedEnd, from));
+  }
+  const elapsedAmount = elapsedPeriods * amt;
+
+  let remainingPeriods = 0;
+  let remainingAmount = 0;
+  if (to && isBefore(today, to)) {
+    const remainStart = dateMax([today, from]);
+    remainingPeriods = Math.max(0, diffFn(to, remainStart));
+    remainingAmount = remainingPeriods * amt;
+  } else if (!to) {
+    remainingPeriods = null;
+    remainingAmount = null;
+  }
+
+  const status = !to ? 'ongoing'
+    : isBefore(today, from) ? 'upcoming'
+    : isAfter(today, to) ? 'completed'
+    : 'active';
+
+  return { totalPeriods, totalExpected, elapsedPeriods, elapsedAmount, remainingPeriods, remainingAmount, status, from, to };
 };
 
 export const CATEGORY_COLORS = {

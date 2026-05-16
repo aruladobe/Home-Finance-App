@@ -1,17 +1,24 @@
 import { useState, useMemo } from 'react';
-import { Plus, Edit2, Trash2, TrendingDown, Filter } from 'lucide-react';
+import { Plus, Edit2, Trash2, TrendingDown, Filter, CalendarRange } from 'lucide-react';
 import { useSortable, SortIcon } from '../../hooks/useSortable';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import { useFinance } from '../../context/FinanceContext';
 import Modal from '../../components/common/Modal';
 import StatCard from '../../components/common/StatCard';
-import { formatCurrency, filterByPeriod, sumAmounts, groupByCategory, CATEGORY_COLORS } from '../../utils/calculations';
+import ProjectionPanel from '../../components/common/ProjectionPanel';
+import { formatCurrency, filterByPeriod, sumAmounts, groupByCategory, CATEGORY_COLORS, calculateProjection } from '../../utils/calculations';
 import { format } from 'date-fns';
 
 const CATEGORIES = ['Kids','Education','Transport','Grocery','Entertainment','Maintenance','Furniture','Medicine','Functions','Celebrations','Insurance'];
 const PERIODS = ['daily','monthly','yearly'];
 
-const emptyForm = { category: 'Grocery', amount: '', description: '', date: new Date().toISOString().split('T')[0], period: 'monthly', familyMemberId: '', familyMemberName: '' };
+const today = new Date().toISOString().split('T')[0];
+const emptyForm = {
+  category: 'Grocery', amount: '', description: '',
+  date: today, period: 'monthly',
+  effectiveFrom: today, effectiveTo: '',
+  familyMemberId: '', familyMemberName: ''
+};
 
 export default function ExpensesPage() {
   const { expenses, addExpense, updateExpense, deleteExpense, familyMembers, period } = useFinance();
@@ -30,15 +37,19 @@ export default function ExpensesPage() {
   const total = useMemo(() => sumAmounts(filtered), [filtered]);
   const categoryData = useMemo(() => groupByCategory(filtered), [filtered]);
   const { sorted, sortKey, sortDir, toggle } = useSortable(filtered, 'date', 'desc');
-  const topCategory = categoryData.sort((a, b) => b.value - a.value)[0];
+  const topCategory = [...categoryData].sort((a, b) => b.value - a.value)[0];
 
   const openAdd = () => { setEditItem(null); setForm(emptyForm); setModalOpen(true); };
   const openEdit = (item) => {
     setEditItem(item);
     setForm({
       category: item.category, amount: item.amount, description: item.description || '',
-      date: item.date ? new Date(item.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-      period: item.period || 'monthly', familyMemberId: item.familyMemberId || '', familyMemberName: item.familyMemberName || '',
+      date: item.date ? new Date(item.date).toISOString().split('T')[0] : today,
+      period: item.period || 'monthly',
+      effectiveFrom: item.effectiveFrom ? new Date(item.effectiveFrom).toISOString().split('T')[0] : today,
+      effectiveTo: item.effectiveTo ? new Date(item.effectiveTo).toISOString().split('T')[0] : '',
+      familyMemberId: item.familyMemberId || '',
+      familyMemberName: item.familyMemberName || '',
     });
     setModalOpen(true);
   };
@@ -47,7 +58,7 @@ export default function ExpensesPage() {
     e.preventDefault();
     setSaving(true);
     const member = familyMembers.find(m => m._id === form.familyMemberId || m.id === form.familyMemberId);
-    const payload = { ...form, amount: Number(form.amount), familyMemberName: member?.name || '' };
+    const payload = { ...form, amount: Number(form.amount), familyMemberName: member?.name || '', effectiveTo: form.effectiveTo || null };
     try {
       if (editItem) await updateExpense(editItem._id || editItem.id, payload);
       else await addExpense(payload);
@@ -86,7 +97,7 @@ export default function ExpensesPage() {
                 </PieChart>
               </ResponsiveContainer>
               <div className="space-y-1.5 mt-3 max-h-48 overflow-y-auto">
-                {categoryData.sort((a,b) => b.value - a.value).map(item => (
+                {[...categoryData].sort((a,b) => b.value - a.value).map(item => (
                   <div key={item.name} className="flex items-center justify-between text-xs">
                     <div className="flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: CATEGORY_COLORS[item.name] || '#6366f1' }} />
@@ -126,21 +137,22 @@ export default function ExpensesPage() {
                   <th onClick={() => toggle('familyMemberName')} className="table-header text-left px-5 py-3 hidden sm:table-cell cursor-pointer select-none hover:text-white transition-colors">
                     <span className="flex items-center">Member <SortIcon col="familyMemberName" sortKey={sortKey} sortDir={sortDir} /></span>
                   </th>
-                  <th onClick={() => toggle('date')} className="table-header text-left px-5 py-3 hidden md:table-cell cursor-pointer select-none hover:text-white transition-colors">
-                    <span className="flex items-center">Date <SortIcon col="date" sortKey={sortKey} sortDir={sortDir} /></span>
-                  </th>
-                  <th className="table-header text-left px-5 py-3 hidden lg:table-cell">Description</th>
+                  <th className="table-header text-left px-5 py-3 hidden md:table-cell">Effective Range</th>
                   <th onClick={() => toggle('amount')} className="table-header text-right px-5 py-3 cursor-pointer select-none hover:text-white transition-colors">
                     <span className="flex items-center justify-end">Amount <SortIcon col="amount" sortKey={sortKey} sortDir={sortDir} /></span>
                   </th>
+                  <th className="table-header text-right px-5 py-3 hidden lg:table-cell">Remaining</th>
                   <th className="table-header text-right px-5 py-3">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {sorted.length === 0 ? (
                   <tr><td colSpan={6} className="px-5 py-16 text-center text-white/30">No expenses found. Add your first entry!</td></tr>
-                ) : (
-                  sorted.map(item => (
+                ) : sorted.map(item => {
+                  const proj = item.effectiveFrom
+                    ? calculateProjection(item.amount, item.period, item.effectiveFrom, item.effectiveTo)
+                    : null;
+                  return (
                     <tr key={item._id || item.id} className="table-row">
                       <td className="px-5 py-3">
                         <div className="flex items-center gap-2">
@@ -149,9 +161,24 @@ export default function ExpensesPage() {
                         </div>
                       </td>
                       <td className="px-5 py-3 hidden sm:table-cell text-sm text-white/50">{item.familyMemberName || 'Self'}</td>
-                      <td className="px-5 py-3 hidden md:table-cell text-sm text-white/50">{item.date ? format(new Date(item.date), 'dd MMM yyyy') : '-'}</td>
-                      <td className="px-5 py-3 hidden lg:table-cell text-sm text-white/50 max-w-xs truncate">{item.description || '-'}</td>
+                      <td className="px-5 py-3 hidden md:table-cell">
+                        {item.effectiveFrom ? (
+                          <div className="flex items-center gap-1 text-xs text-white/50">
+                            <CalendarRange size={12} className="text-red-400 flex-shrink-0" />
+                            {format(new Date(item.effectiveFrom), 'dd MMM yy')}
+                            {item.effectiveTo && <> → {format(new Date(item.effectiveTo), 'dd MMM yy')}</>}
+                            {!item.effectiveTo && <span className="text-purple-400">→ ongoing</span>}
+                          </div>
+                        ) : <span className="text-white/25 text-xs">—</span>}
+                      </td>
                       <td className="px-5 py-3 text-right font-semibold text-expense">{formatCurrency(item.amount)}</td>
+                      <td className="px-5 py-3 hidden lg:table-cell text-right">
+                        {proj ? (
+                          <span className={`text-sm font-medium ${proj.remainingAmount > 0 ? 'text-yellow-400' : 'text-white/30'}`}>
+                            {proj.remainingAmount !== null ? formatCurrency(proj.remainingAmount) : '∞'}
+                          </span>
+                        ) : <span className="text-white/25 text-xs">—</span>}
+                      </td>
                       <td className="px-5 py-3 text-right">
                         <div className="flex items-center justify-end gap-1">
                           <button onClick={() => openEdit(item)} className="p-1.5 rounded-lg hover:bg-white/10 text-white/40 hover:text-primary-400 transition-colors"><Edit2 size={14} /></button>
@@ -159,15 +186,15 @@ export default function ExpensesPage() {
                         </div>
                       </td>
                     </tr>
-                  ))
-                )}
+                  );
+                })}
               </tbody>
             </table>
           </div>
         </div>
       </div>
 
-      <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={editItem ? 'Edit Expense' : 'Add Expense'}>
+      <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={editItem ? 'Edit Expense' : 'Add Expense'} size="lg">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -177,11 +204,11 @@ export default function ExpensesPage() {
               </select>
             </div>
             <div>
-              <label className="label">Amount *</label>
+              <label className="label">Amount (₹) *</label>
               <input type="number" className="input-field" placeholder="0.00" min="0" step="0.01" value={form.amount} onChange={setField('amount')} required />
             </div>
             <div>
-              <label className="label">Date *</label>
+              <label className="label">Transaction Date *</label>
               <input type="date" className="input-field" value={form.date} onChange={setField('date')} required />
             </div>
             <div>
@@ -190,6 +217,26 @@ export default function ExpensesPage() {
                 {PERIODS.map(p => <option key={p} value={p} className="capitalize">{p}</option>)}
               </select>
             </div>
+
+            {/* Effective Date Range */}
+            <div className="col-span-2">
+              <div className="flex items-center gap-2 mb-2">
+                <CalendarRange size={14} className="text-red-400" />
+                <span className="text-sm font-medium text-white/70">Effective Date Range</span>
+                <span className="text-xs text-white/30">(for projection)</span>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="label">From *</label>
+                  <input type="date" className="input-field" value={form.effectiveFrom} onChange={setField('effectiveFrom')} required />
+                </div>
+                <div>
+                  <label className="label">To <span className="text-white/30">(blank = ongoing)</span></label>
+                  <input type="date" className="input-field" value={form.effectiveTo} min={form.effectiveFrom || undefined} onChange={setField('effectiveTo')} />
+                </div>
+              </div>
+            </div>
+
             <div className="col-span-2">
               <label className="label">Family Member</label>
               <select className="select-field" value={form.familyMemberId} onChange={setField('familyMemberId')}>
@@ -202,6 +249,18 @@ export default function ExpensesPage() {
               <input type="text" className="input-field" placeholder="What was this expense for?" value={form.description} onChange={setField('description')} />
             </div>
           </div>
+
+          {/* Live Projection */}
+          {form.amount && form.effectiveFrom && (
+            <ProjectionPanel
+              amount={form.amount}
+              period={form.period}
+              effectiveFrom={form.effectiveFrom}
+              effectiveTo={form.effectiveTo}
+              accentColor="text-red-400"
+            />
+          )}
+
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={() => setModalOpen(false)} className="btn-secondary flex-1">Cancel</button>
             <button type="submit" disabled={saving} className="btn-primary flex-1">

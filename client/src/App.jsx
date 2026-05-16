@@ -10,6 +10,7 @@ import ExpensesPage from './pages/Expenses';
 import InvestmentPage from './pages/Investment';
 import ProfitPage from './pages/Profit';
 import UserManagement from './pages/UserManagement';
+import CalculatorPage from './pages/Calculator';
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -51,6 +52,7 @@ export default function App() {
         <Route path="/investments" element={<InvestmentPage />} />
         <Route path="/profit" element={<ProfitPage />} />
         <Route path="/users" element={<UserManagement />} />
+        <Route path="/calculator" element={<CalculatorPage />} />
       </Route>
     </Routes>
   );

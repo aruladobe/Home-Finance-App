@@ -12,7 +12,9 @@ const incomeSchema = new mongoose.Schema({
   amount: { type: Number, required: true, min: 0 },
   description: { type: String, default: '' },
   date: { type: Date, required: true, default: Date.now },
-  period: { type: String, enum: ['daily', 'monthly', 'yearly'], default: 'monthly' }
+  period: { type: String, enum: ['daily', 'monthly', 'yearly'], default: 'monthly' },
+  effectiveFrom: { type: Date, default: null },
+  effectiveTo: { type: Date, default: null }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Income', incomeSchema);
