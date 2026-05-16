@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { incomeAPI, expenseAPI, investmentAPI, familyAPI, plannedExpenseAPI } from '../utils/api';
 import { storage } from '../utils/localStorage';
+import { getCurrentFY } from '../utils/calculations';
 import { useAuth } from './AuthContext';
 
 const FinanceContext = createContext(null);
@@ -14,6 +15,7 @@ export const FinanceProvider = ({ children }) => {
   const [plannedExpenses, setPlannedExpenses] = useState([]);
   const [loading, setLoading] = useState(false);
   const [period, setPeriod] = useState('monthly');
+  const [financialYear, setFinancialYear] = useState(null);
 
   const fetchAll = useCallback(async () => {
     if (!user) return;
@@ -238,7 +240,7 @@ export const FinanceProvider = ({ children }) => {
   return (
     <FinanceContext.Provider value={{
       income, expenses, investments, familyMembers, plannedExpenses,
-      loading, period, setPeriod, fetchAll,
+      loading, period, setPeriod, financialYear, setFinancialYear, fetchAll,
       addIncome, updateIncome, deleteIncome,
       addExpense, updateExpense, deleteExpense,
       addInvestment, updateInvestment, deleteInvestment,

@@ -6,7 +6,7 @@ import {
 import { TrendingUp, TrendingDown, Wallet, PiggyBank, Target, Percent } from 'lucide-react';
 import { useFinance } from '../../context/FinanceContext';
 import StatCard from '../../components/common/StatCard';
-import { formatCurrency, formatCurrencyCompact, filterByPeriod, calculateProfit, groupByMonth } from '../../utils/calculations';
+import { formatCurrency, formatCurrencyCompact, filterByPeriod, filterByFY, calculateProfit, groupByMonth } from '../../utils/calculations';
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
@@ -23,20 +23,22 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 export default function ProfitPage() {
-  const { income, expenses, investments, period } = useFinance();
+  const { income, expenses, investments, period, financialYear } = useFinance();
 
   const filtered = useMemo(() => ({
-    income: filterByPeriod(income, period),
-    expenses: filterByPeriod(expenses, period),
-    investments: filterByPeriod(investments, period),
-  }), [income, expenses, investments, period]);
+    income: financialYear ? filterByFY(income, financialYear) : filterByPeriod(income, period),
+    expenses: financialYear ? filterByFY(expenses, financialYear) : filterByPeriod(expenses, period),
+    investments: financialYear ? filterByFY(investments, financialYear) : filterByPeriod(investments, period),
+  }), [income, expenses, investments, period, financialYear]);
 
   const stats = useMemo(() => calculateProfit(filtered.income, filtered.expenses, filtered.investments), [filtered]);
 
+  const chartYear = financialYear ? parseInt(financialYear.split('-')[0]) : new Date().getFullYear();
+
   const monthlyTrend = useMemo(() => {
-    const inc = groupByMonth(income);
-    const exp = groupByMonth(expenses);
-    const inv = groupByMonth(investments);
+    const inc = groupByMonth(income, chartYear);
+    const exp = groupByMonth(expenses, chartYear);
+    const inv = groupByMonth(investments, chartYear);
     return inc.map((item, i) => ({
       month: item.month,
       Income: item.amount,
@@ -44,7 +46,7 @@ export default function ProfitPage() {
       Invested: inv[i].amount,
       Profit: item.amount - exp[i].amount - inv[i].amount,
     }));
-  }, [income, expenses, investments]);
+  }, [income, expenses, investments, chartYear]);
 
   const cumulativeProfit = useMemo(() => {
     let running = 0;

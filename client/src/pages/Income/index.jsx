@@ -5,7 +5,7 @@ import { useFinance } from '../../context/FinanceContext';
 import Modal from '../../components/common/Modal';
 import StatCard from '../../components/common/StatCard';
 import ProjectionPanel from '../../components/common/ProjectionPanel';
-import { formatCurrency, filterByPeriod, sumAmounts, calculateProjection } from '../../utils/calculations';
+import { formatCurrency, filterByPeriod, filterByFY, sumAmounts, calculateProjection } from '../../utils/calculations';
 import { format } from 'date-fns';
 
 const INCOME_TYPES = ['Salary', 'Earning', 'Interest', 'House Rent', 'Other Source'];
@@ -28,7 +28,7 @@ const emptyForm = {
 };
 
 export default function IncomePage() {
-  const { income, addIncome, updateIncome, deleteIncome, familyMembers, period } = useFinance();
+  const { income, addIncome, updateIncome, deleteIncome, familyMembers, period, financialYear } = useFinance();
   const [modalOpen, setModalOpen] = useState(false);
   const [editItem, setEditItem] = useState(null);
   const [form, setForm] = useState(emptyForm);
@@ -36,10 +36,10 @@ export default function IncomePage() {
   const [filterType, setFilterType] = useState('');
 
   const filtered = useMemo(() => {
-    let data = filterByPeriod(income, period);
+    let data = financialYear ? filterByFY(income, financialYear) : filterByPeriod(income, period);
     if (filterType) data = data.filter(i => i.type === filterType);
     return data;
-  }, [income, period, filterType]);
+  }, [income, period, financialYear, filterType]);
 
   const total = useMemo(() => sumAmounts(filtered), [filtered]);
   const { sorted, sortKey, sortDir, toggle } = useSortable(filtered, 'date', 'desc');

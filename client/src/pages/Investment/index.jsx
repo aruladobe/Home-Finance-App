@@ -5,7 +5,7 @@ import { useFinance } from '../../context/FinanceContext';
 import Modal from '../../components/common/Modal';
 import StatCard from '../../components/common/StatCard';
 import ProjectionPanel from '../../components/common/ProjectionPanel';
-import { formatCurrency, filterByPeriod, sumAmounts, INVESTMENT_COLORS, calculateProjection } from '../../utils/calculations';
+import { formatCurrency, filterByPeriod, filterByFY, sumAmounts, INVESTMENT_COLORS, calculateProjection } from '../../utils/calculations';
 import { format } from 'date-fns';
 
 const INV_TYPES = ['Stocks','Mutual Funds','Fixed Deposit','Real Estate','Gold','Crypto','PPF','NPS','Insurance','Other'];
@@ -28,7 +28,7 @@ const STATUS_STYLES = {
 };
 
 export default function InvestmentPage() {
-  const { investments, addInvestment, updateInvestment, deleteInvestment, familyMembers, period } = useFinance();
+  const { investments, addInvestment, updateInvestment, deleteInvestment, familyMembers, period, financialYear } = useFinance();
   const [modalOpen, setModalOpen] = useState(false);
   const [editItem, setEditItem] = useState(null);
   const [form, setForm] = useState(emptyForm);
@@ -37,11 +37,11 @@ export default function InvestmentPage() {
   const [filterStatus, setFilterStatus] = useState('');
 
   const filtered = useMemo(() => {
-    let data = filterByPeriod(investments, period);
+    let data = financialYear ? filterByFY(investments, financialYear) : filterByPeriod(investments, period);
     if (filterType) data = data.filter(i => i.type === filterType);
     if (filterStatus) data = data.filter(i => i.status === filterStatus);
     return data;
-  }, [investments, period, filterType, filterStatus]);
+  }, [investments, period, financialYear, filterType, filterStatus]);
 
   const totalInvested = useMemo(() => sumAmounts(filtered), [filtered]);
   const { sorted, sortKey, sortDir, toggle } = useSortable(filtered, 'date', 'desc');

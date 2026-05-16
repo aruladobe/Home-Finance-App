@@ -15,6 +15,40 @@ export const formatCurrencyCompact = (v, currency = '₹') => {
   return `${currency}${n}`;
 };
 
+// Financial year helpers (Indian FY: April 1 – March 31)
+export const getCurrentFY = () => {
+  const now = new Date();
+  const year = now.getMonth() >= 3 ? now.getFullYear() : now.getFullYear() - 1;
+  return `${year}-${String(year + 1).slice(2)}`;
+};
+
+export const getFYDateRange = (fy) => {
+  const startYear = parseInt(fy.split('-')[0]);
+  return {
+    start: new Date(startYear, 3, 1),
+    end: new Date(startYear + 1, 2, 31, 23, 59, 59, 999),
+  };
+};
+
+export const getAvailableFYs = (count = 5) => {
+  const now = new Date();
+  const currentStart = now.getMonth() >= 3 ? now.getFullYear() : now.getFullYear() - 1;
+  return Array.from({ length: count }, (_, i) => {
+    const y = currentStart - i;
+    return `${y}-${String(y + 1).slice(2)}`;
+  });
+};
+
+export const filterByFY = (items, fy) => {
+  const { start, end } = getFYDateRange(fy);
+  return items.filter(item => {
+    const d = item.date
+      ? (typeof item.date === 'string' ? parseISO(item.date) : new Date(item.date))
+      : null;
+    return d && d >= start && d <= end;
+  });
+};
+
 export const filterByPeriod = (items, period) => {
   const now = new Date();
   let start, end;

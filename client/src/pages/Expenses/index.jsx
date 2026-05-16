@@ -6,7 +6,7 @@ import { useFinance } from '../../context/FinanceContext';
 import Modal from '../../components/common/Modal';
 import StatCard from '../../components/common/StatCard';
 import ProjectionPanel from '../../components/common/ProjectionPanel';
-import { formatCurrency, filterByPeriod, sumAmounts, groupByCategory, CATEGORY_COLORS, calculateProjection } from '../../utils/calculations';
+import { formatCurrency, filterByPeriod, filterByFY, sumAmounts, groupByCategory, CATEGORY_COLORS, calculateProjection } from '../../utils/calculations';
 import { format, isPast, isToday, differenceInDays } from 'date-fns';
 
 const CATEGORIES = ['Kids','Education','Transport','Grocery','Entertainment','Maintenance','Furniture','Medicine','Functions','Celebrations','Insurance','Loan Repayment','Bills','Fuel and Gas','Outing','Party'];
@@ -31,7 +31,7 @@ function DueBadge({ effectiveDate }) {
 }
 
 export default function ExpensesPage() {
-  const { income, expenses, addExpense, updateExpense, deleteExpense, familyMembers, period,
+  const { income, expenses, addExpense, updateExpense, deleteExpense, familyMembers, period, financialYear,
           plannedExpenses, addPlannedExpense, updatePlannedExpense, deletePlannedExpense, movePlannedToExpense } = useFinance();
 
   const [tab, setTab] = useState('actual');
@@ -55,10 +55,10 @@ export default function ExpensesPage() {
 
   // Actual expenses
   const filtered = useMemo(() => {
-    let data = filterByPeriod(expenses, period);
+    let data = financialYear ? filterByFY(expenses, financialYear) : filterByPeriod(expenses, period);
     if (filterCat) data = data.filter(e => e.category === filterCat);
     return data;
-  }, [expenses, period, filterCat]);
+  }, [expenses, period, financialYear, filterCat]);
 
   const total = useMemo(() => sumAmounts(filtered), [filtered]);
   const categoryData = useMemo(() => groupByCategory(filtered), [filtered]);
@@ -68,7 +68,10 @@ export default function ExpensesPage() {
   // Planned expenses summary
   const plannedTotal = useMemo(() => plannedExpenses.reduce((s, e) => s + e.amount, 0), [plannedExpenses]);
   const dueCount = useMemo(() => plannedExpenses.filter(e => isPast(new Date(e.effectiveDate)) || isToday(new Date(e.effectiveDate))).length, [plannedExpenses]);
-  const netProfit = useMemo(() => sumAmounts(filterByPeriod(income, period)) - sumAmounts(filterByPeriod(expenses, period)), [income, expenses, period]);
+  const netProfit = useMemo(() => {
+    const applyFilter = (data) => financialYear ? filterByFY(data, financialYear) : filterByPeriod(data, period);
+    return sumAmounts(applyFilter(income)) - sumAmounts(applyFilter(expenses));
+  }, [income, expenses, period, financialYear]);
   const needToEarn = useMemo(() => Math.max(0, plannedTotal - Math.max(0, netProfit)), [plannedTotal, netProfit]);
 
   // --- Actual expense handlers ---

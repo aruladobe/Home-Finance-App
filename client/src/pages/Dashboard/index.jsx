@@ -7,7 +7,7 @@ import { TrendingUp, TrendingDown, Wallet, PiggyBank, ArrowUpRight, ArrowDownRig
 import { useFinance } from '../../context/FinanceContext';
 import StatCard from '../../components/common/StatCard';
 import {
-  formatCurrency, formatCurrencyCompact, filterByPeriod, sumAmounts, calculateProfit,
+  formatCurrency, formatCurrencyCompact, filterByPeriod, filterByFY, sumAmounts, calculateProfit,
   groupByMonth, groupByCategory, CATEGORY_COLORS, INCOME_COLORS
 } from '../../utils/calculations';
 import { format } from 'date-fns';
@@ -27,13 +27,13 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 export default function Dashboard() {
-  const { income, expenses, investments, period } = useFinance();
+  const { income, expenses, investments, period, financialYear } = useFinance();
 
   const filtered = useMemo(() => ({
-    income: filterByPeriod(income, period),
-    expenses: filterByPeriod(expenses, period),
-    investments: filterByPeriod(investments, period),
-  }), [income, expenses, investments, period]);
+    income: financialYear ? filterByFY(income, financialYear) : filterByPeriod(income, period),
+    expenses: financialYear ? filterByFY(expenses, financialYear) : filterByPeriod(expenses, period),
+    investments: financialYear ? filterByFY(investments, financialYear) : filterByPeriod(investments, period),
+  }), [income, expenses, investments, period, financialYear]);
 
   const stats = useMemo(() => calculateProfit(filtered.income, filtered.expenses, filtered.investments), [filtered]);
 
