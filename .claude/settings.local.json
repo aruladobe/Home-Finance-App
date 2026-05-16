@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -r \"\\\\$\\\\|₹\\\\|currency\" /Users/arulk/Documents/personal/finance-app/client/src --include=\"*.ts\" --include=\"*.tsx\" --include=\"*.js\" --include=\"*.jsx\" -n)",
+      "Bash(brew services *)",
+      "Bash(echo \"exit:$?\")"
+    ]
+  }
+}
