@@ -19,6 +19,7 @@ app.use('/api/income', require('./routes/income'));
 app.use('/api/expenses', require('./routes/expenses'));
 app.use('/api/investments', require('./routes/investments'));
 app.use('/api/family-members', require('./routes/familyMembers'));
+app.use('/api/planned-expenses', require('./routes/plannedExpenses'));
 
 app.get('/api/health', (req, res) => res.json({ status: 'OK' }));
 

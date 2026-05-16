@@ -47,6 +47,14 @@ export const investmentAPI = {
   delete: (id) => api.delete(`/investments/${id}`),
 };
 
+export const plannedExpenseAPI = {
+  getAll: () => api.get('/planned-expenses'),
+  create: (data) => api.post('/planned-expenses', data),
+  update: (id, data) => api.put(`/planned-expenses/${id}`, data),
+  delete: (id) => api.delete(`/planned-expenses/${id}`),
+  move: (id, data) => api.post(`/planned-expenses/${id}/move`, data),
+};
+
 export const familyAPI = {
   getAll: () => api.get('/family-members'),
   create: (data) => api.post('/family-members', data),

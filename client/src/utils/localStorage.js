@@ -3,6 +3,7 @@ const KEYS = {
   EXPENSES: 'finance_expenses',
   INVESTMENTS: 'finance_investments',
   FAMILY_MEMBERS: 'finance_family_members',
+  PLANNED_EXPENSES: 'finance_planned_expenses',
   USER: 'finance_user',
   TOKEN: 'finance_token',
 };
@@ -71,6 +72,13 @@ export const storage = {
   updateFamilyMember: (id, data) => updateItem(KEYS.FAMILY_MEMBERS, id, data),
   deleteFamilyMember: (id) => deleteItem(KEYS.FAMILY_MEMBERS, id),
   syncFamilyMembers: (items) => syncFromServer(KEYS.FAMILY_MEMBERS, items),
+
+  getPlannedExpenses: () => get(KEYS.PLANNED_EXPENSES) || [],
+  setPlannedExpenses: (data) => set(KEYS.PLANNED_EXPENSES, data),
+  addPlannedExpense: (item) => addItem(KEYS.PLANNED_EXPENSES, item),
+  updatePlannedExpense: (id, data) => updateItem(KEYS.PLANNED_EXPENSES, id, data),
+  deletePlannedExpense: (id) => deleteItem(KEYS.PLANNED_EXPENSES, id),
+  syncPlannedExpenses: (items) => syncFromServer(KEYS.PLANNED_EXPENSES, items),
 
   getUser: () => get(KEYS.USER),
   setUser: (user) => set(KEYS.USER, user),
