@@ -15,7 +15,10 @@ router.get('/', auth, async (req, res) => {
 
 router.post('/', auth, async (req, res) => {
   try {
-    const item = new PlannedExpense({ ...req.body, userId: req.user.id });
+    const body = { ...req.body, userId: req.user.id };
+    if (body.familyMemberId === '') body.familyMemberId = null;
+    if (body.effectiveDate === '') body.effectiveDate = null;
+    const item = new PlannedExpense(body);
     await item.save();
     res.status(201).json(item);
   } catch (err) {
@@ -25,9 +28,12 @@ router.post('/', auth, async (req, res) => {
 
 router.put('/:id', auth, async (req, res) => {
   try {
+    const body = { ...req.body };
+    if (body.familyMemberId === '') body.familyMemberId = null;
+    if (body.effectiveDate === '') body.effectiveDate = null;
     const item = await PlannedExpense.findOneAndUpdate(
       { _id: req.params.id, userId: req.user.id },
-      req.body, { new: true }
+      body, { new: true }
     );
     if (!item) return res.status(404).json({ message: 'Not found' });
     res.json(item);

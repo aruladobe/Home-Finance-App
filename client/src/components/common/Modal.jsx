@@ -35,9 +35,9 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' })
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
-        className={`relative w-full ${sizeClasses[size]} glass-card p-6 animate-slide-up shadow-2xl outline-none`}
+        className={`relative w-full ${sizeClasses[size]} glass-card animate-slide-up shadow-2xl outline-none flex flex-col max-h-[90vh]`}
       >
-        <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center justify-between px-6 pt-6 pb-5 flex-shrink-0">
           <h2 id={titleId} className="text-lg font-semibold text-slate-900 dark:text-white">{title}</h2>
           <button
             onClick={onClose}
@@ -47,7 +47,9 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' })
             <X size={18} aria-hidden="true" />
           </button>
         </div>
-        {children}
+        <div className="overflow-y-auto px-6 pb-6 flex-1">
+          {children}
+        </div>
       </div>
     </div>
   );

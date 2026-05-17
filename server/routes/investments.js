@@ -20,7 +20,12 @@ router.get('/', auth, async (req, res) => {
 
 router.post('/', auth, async (req, res) => {
   try {
-    const investment = new Investment({ ...req.body, userId: req.user.id });
+    const body = { ...req.body, userId: req.user.id };
+    if (body.familyMemberId === '') body.familyMemberId = null;
+    if (body.maturityDate === '') body.maturityDate = null;
+    if (body.effectiveFrom === '') body.effectiveFrom = null;
+    if (body.effectiveTo === '') body.effectiveTo = null;
+    const investment = new Investment(body);
     await investment.save();
     res.status(201).json(investment);
   } catch (err) {
@@ -30,9 +35,14 @@ router.post('/', auth, async (req, res) => {
 
 router.put('/:id', auth, async (req, res) => {
   try {
+    const body = { ...req.body };
+    if (body.familyMemberId === '') body.familyMemberId = null;
+    if (body.maturityDate === '') body.maturityDate = null;
+    if (body.effectiveFrom === '') body.effectiveFrom = null;
+    if (body.effectiveTo === '') body.effectiveTo = null;
     const investment = await Investment.findOneAndUpdate(
       { _id: req.params.id, userId: req.user.id },
-      req.body, { new: true }
+      body, { new: true }
     );
     if (!investment) return res.status(404).json({ message: 'Not found' });
     res.json(investment);

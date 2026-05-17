@@ -23,7 +23,11 @@ router.get('/', auth, async (req, res) => {
 
 router.post('/', auth, async (req, res) => {
   try {
-    const income = new Income({ ...req.body, userId: req.user.id });
+    const body = { ...req.body, userId: req.user.id };
+    if (body.familyMemberId === '') body.familyMemberId = null;
+    if (body.effectiveFrom === '') body.effectiveFrom = null;
+    if (body.effectiveTo === '') body.effectiveTo = null;
+    const income = new Income(body);
     await income.save();
     res.status(201).json(income);
   } catch (err) {
@@ -33,9 +37,13 @@ router.post('/', auth, async (req, res) => {
 
 router.put('/:id', auth, async (req, res) => {
   try {
+    const body = { ...req.body };
+    if (body.familyMemberId === '') body.familyMemberId = null;
+    if (body.effectiveFrom === '') body.effectiveFrom = null;
+    if (body.effectiveTo === '') body.effectiveTo = null;
     const income = await Income.findOneAndUpdate(
       { _id: req.params.id, userId: req.user.id },
-      req.body, { new: true }
+      body, { new: true }
     );
     if (!income) return res.status(404).json({ message: 'Not found' });
     res.json(income);
