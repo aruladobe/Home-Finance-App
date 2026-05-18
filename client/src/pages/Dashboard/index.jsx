@@ -3,7 +3,7 @@ import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
 } from 'recharts';
-import { TrendingUp, TrendingDown, Wallet, PiggyBank, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, PiggyBank, ArrowUpRight, ArrowDownRight, Clock } from 'lucide-react';
 import { useFinance } from '../../context/FinanceContext';
 import { useTheme } from '../../context/ThemeContext';
 import StatCard from '../../components/common/StatCard';
@@ -11,7 +11,7 @@ import {
   formatCurrency, formatCurrencyCompact, filterByPeriod, filterByFY, sumAmounts, calculateProfit,
   groupByMonth, groupByCategory, CATEGORY_COLORS, INCOME_COLORS
 } from '../../utils/calculations';
-import { format } from 'date-fns';
+import { format, isPast, isToday, differenceInDays, addDays } from 'date-fns';
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
@@ -28,7 +28,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 export default function Dashboard() {
-  const { income, expenses, investments, period, financialYear } = useFinance();
+  const { income, expenses, investments, plannedExpenses, period, financialYear } = useFinance();
   const { theme } = useTheme();
   const isDark = theme === 'dark';
   const gridColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)';
@@ -60,6 +60,13 @@ export default function Dashboard() {
     filtered.income.forEach(i => { groups[i.type] = (groups[i.type] || 0) + Number(i.amount); });
     return Object.entries(groups).map(([name, value]) => ({ name, value }));
   }, [filtered.income]);
+
+  const upcomingPlanned = useMemo(() => {
+    const cutoff = addDays(new Date(), 30);
+    return (plannedExpenses || [])
+      .filter(e => new Date(e.effectiveDate) <= cutoff)
+      .sort((a, b) => new Date(a.effectiveDate) - new Date(b.effectiveDate));
+  }, [plannedExpenses]);
 
   const recentTransactions = useMemo(() => {
     const all = [
@@ -211,6 +218,44 @@ export default function Dashboard() {
           )}
         </div>
       </div>
+
+      {/* Upcoming planned expenses */}
+      {upcomingPlanned.length > 0 && (
+        <div className="glass-card p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Clock size={16} aria-hidden="true" className="text-amber-400" />
+              <h3 className="section-title">Upcoming Planned Expenses</h3>
+            </div>
+            <span className="text-xs text-slate-400 dark:text-white/40">Next 30 days · {upcomingPlanned.length} item{upcomingPlanned.length !== 1 ? 's' : ''}</span>
+          </div>
+          <div className="space-y-2">
+            {upcomingPlanned.map(item => {
+              const d = new Date(item.effectiveDate);
+              const days = differenceInDays(d, new Date());
+              const isDue = isPast(d) || isToday(d);
+              const isSoon = !isDue && days <= 5;
+              return (
+                <div key={item._id || item.id} className={`flex items-center justify-between p-3 rounded-xl ${isDue ? 'bg-red-500/10 border border-red-500/20' : isSoon ? 'bg-amber-500/10 border border-amber-500/20' : 'bg-slate-50 dark:bg-white/5'}`}>
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: CATEGORY_COLORS[item.category] || '#6366f1' }} />
+                    <span className="text-sm text-slate-700 dark:text-white/80 truncate">{item.category}</span>
+                    {item.familyMemberName && <span className="text-xs text-slate-400 dark:text-white/30 hidden sm:inline">· {item.familyMemberName}</span>}
+                  </div>
+                  <div className="flex items-center gap-3 flex-shrink-0 ml-2">
+                    <span className="text-xs text-slate-400 dark:text-white/40 hidden sm:inline">{format(d, 'dd MMM')}</span>
+                    {isDue
+                      ? <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-500/20 text-red-400">Due</span>
+                      : <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${isSoon ? 'bg-amber-500/20 text-amber-400' : 'bg-blue-500/20 text-blue-400'}`}>In {days}d</span>
+                    }
+                    <span className="text-sm font-semibold text-expense">{formatCurrency(item.amount)}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Recent transactions */}
       <div className="glass-card p-5">

@@ -8,9 +8,9 @@ import Modal from '../../components/common/Modal';
 import StatCard from '../../components/common/StatCard';
 import ProjectionPanel from '../../components/common/ProjectionPanel';
 import { formatCurrency, filterByPeriod, filterByFY, sumAmounts, groupByCategory, CATEGORY_COLORS, calculateProjection } from '../../utils/calculations';
-import { format, isPast, isToday, differenceInDays } from 'date-fns';
+import { format, isPast, isToday, differenceInDays, addDays } from 'date-fns';
 
-const CATEGORIES = ['Kids','Education','Transport','Grocery','Entertainment','Maintenance','Furniture','Medicine','Functions','Celebrations','Insurance','Loan Repayment','Bills','Fuel and Gas','Outing','Party'];
+const CATEGORIES = ['Kids','Education','Transport','Grocery','Entertainment','Service and Maintenance','Furniture','Medicine','Functions and Celebrations','Insurance','Loan Repayment','Bills', 'Rent', 'Fuel and Gas','Outing','Party','Others'];
 const PERIODS = ['daily','monthly','yearly'];
 
 const today = new Date().toISOString().split('T')[0];
@@ -72,6 +72,13 @@ export default function ExpensesPage() {
     return sumAmounts(applyFilter(income)) - sumAmounts(applyFilter(expenses));
   }, [income, expenses, period, financialYear]);
   const needToEarn = useMemo(() => Math.max(0, plannedTotal - Math.max(0, netProfit)), [plannedTotal, netProfit]);
+
+  const upcomingPlanned = useMemo(() => {
+    const cutoff = addDays(new Date(), 30);
+    return plannedExpenses
+      .filter(e => new Date(e.effectiveDate) <= cutoff)
+      .sort((a, b) => new Date(a.effectiveDate) - new Date(b.effectiveDate));
+  }, [plannedExpenses]);
 
   const tooltipStyle = useMemo(() => ({
     background: isDark ? 'rgba(15,23,42,0.95)' : 'rgba(255,255,255,0.95)',
@@ -414,6 +421,56 @@ export default function ExpensesPage() {
                 </tbody>
               </table>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Upcoming planned expenses tail */}
+      {upcomingPlanned.length > 0 && (
+        <div className="glass-card p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Clock size={16} aria-hidden="true" className="text-amber-400" />
+              <h3 className="section-title">Upcoming Planned Expenses</h3>
+            </div>
+            <span className="text-xs text-slate-400 dark:text-white/40">Next 30 days · {upcomingPlanned.length} item{upcomingPlanned.length !== 1 ? 's' : ''}</span>
+          </div>
+          <div className="space-y-2">
+            {upcomingPlanned.map(item => {
+              const d = new Date(item.effectiveDate);
+              const days = differenceInDays(d, new Date());
+              const isDue = isPast(d) || isToday(d);
+              const isSoon = !isDue && days <= 5;
+              return (
+                <div key={item._id || item.id} className={`flex items-center justify-between p-3 rounded-xl ${isDue ? 'bg-red-500/10 border border-red-500/20' : isSoon ? 'bg-amber-500/10 border border-amber-500/20' : 'bg-slate-50 dark:bg-white/5'}`}>
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: CATEGORY_COLORS[item.category] || '#6366f1' }} />
+                    <div className="min-w-0">
+                      <span className="text-sm text-slate-700 dark:text-white/80">{item.category}</span>
+                      {(item.notes || item.description) && (
+                        <p className="text-xs text-slate-400 dark:text-white/30 truncate">{item.notes || item.description}</p>
+                      )}
+                    </div>
+                    {item.familyMemberName && <span className="text-xs text-slate-400 dark:text-white/30 hidden sm:inline ml-1">· {item.familyMemberName}</span>}
+                  </div>
+                  <div className="flex items-center gap-3 flex-shrink-0 ml-2">
+                    <span className="text-xs text-slate-400 dark:text-white/40 hidden md:inline">{format(d, 'dd MMM yyyy')}</span>
+                    {isDue
+                      ? <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-500/20 text-red-400">Due</span>
+                      : <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${isSoon ? 'bg-amber-500/20 text-amber-400' : 'bg-blue-500/20 text-blue-400'}`}>In {days}d</span>
+                    }
+                    <span className="text-sm font-semibold text-expense">{formatCurrency(item.amount)}</span>
+                    <button
+                      onClick={() => openMoveModal(item)}
+                      aria-label="Mark as done — move to actual expenses"
+                      className="p-1.5 rounded-lg hover:bg-green-50 dark:hover:bg-green-500/10 text-slate-400 dark:text-white/40 hover:text-green-500 dark:hover:text-green-400 transition-colors"
+                    >
+                      <ArrowRight aria-hidden="true" size={14} />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}

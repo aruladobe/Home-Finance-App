@@ -6,7 +6,7 @@ const plannedExpenseSchema = new mongoose.Schema({
   familyMemberName: { type: String, default: '' },
   category: {
     type: String,
-    enum: ['Kids', 'Education', 'Transport', 'Grocery', 'Entertainment', 'Maintenance', 'Furniture', 'Medicine', 'Functions', 'Celebrations', 'Insurance', 'Loan Repayment', 'Bills', 'Fuel and Gas', 'Outing', 'Party'],
+    enum: ['Kids', 'Education', 'Transport', 'Grocery', 'Entertainment', 'Service and Maintenance', 'Furniture', 'Medicine', 'Functions and Celebrations', 'Insurance', 'Loan Repayment', 'Bills', 'Rent', 'Fuel and Gas', 'Outing', 'Party', 'Others'],
     required: true
   },
   amount: { type: Number, required: true, min: 0 },
