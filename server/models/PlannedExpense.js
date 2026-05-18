@@ -12,7 +12,7 @@ const plannedExpenseSchema = new mongoose.Schema({
   amount: { type: Number, required: true, min: 0 },
   description: { type: String, default: '' },
   effectiveDate: { type: Date, required: true },
-  period: { type: String, enum: ['daily', 'monthly', 'yearly'], default: 'monthly' },
+  period: { type: String, enum: ['daily', 'weekly', 'monthly', 'quarterly', 'half-yearly', 'yearly'], default: 'monthly' },
   notes: { type: String, default: '' },
 }, { timestamps: true });
 

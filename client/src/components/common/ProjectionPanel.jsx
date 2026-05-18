@@ -8,7 +8,7 @@ const STATUS_STYLES = {
   ongoing:   { label: 'Ongoing',   color: 'text-purple-400',  bg: 'bg-purple-500/10 border-purple-500/20' },
 };
 
-const PERIOD_LABELS = { daily: 'days', monthly: 'months', yearly: 'years' };
+const PERIOD_LABELS = { daily: 'days', weekly: 'weeks', monthly: 'months', quarterly: 'quarters', 'half-yearly': 'half-years', yearly: 'years' };
 
 export default function ProjectionPanel({ amount, period, effectiveFrom, effectiveTo, accentColor = 'text-primary-400' }) {
   const proj = calculateProjection(amount, period, effectiveFrom, effectiveTo);

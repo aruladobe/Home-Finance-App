@@ -9,7 +9,7 @@ import { formatCurrency, filterByPeriod, filterByFY, sumAmounts, INVESTMENT_COLO
 import { format } from 'date-fns';
 
 const INV_TYPES = ['Stocks','Mutual Funds','Fixed Deposit','Real Estate','Gold','Crypto','PPF','NPS','Insurance','Other'];
-const PERIODS = ['daily','monthly','yearly'];
+const PERIODS = ['daily','weekly','monthly','quarterly','half-yearly','yearly'];
 const STATUSES = ['active','matured','withdrawn'];
 
 const today = new Date().toISOString().split('T')[0];

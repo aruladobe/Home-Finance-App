@@ -15,7 +15,7 @@ const investmentSchema = new mongoose.Schema({
   description: { type: String, default: '' },
   date: { type: Date, required: true, default: Date.now },
   maturityDate: { type: Date },
-  period: { type: String, enum: ['daily', 'monthly', 'yearly'], default: 'monthly' },
+  period: { type: String, enum: ['daily', 'weekly', 'monthly', 'quarterly', 'half-yearly', 'yearly'], default: 'monthly' },
   status: { type: String, enum: ['active', 'matured', 'withdrawn'], default: 'active' },
   effectiveFrom: { type: Date, default: null },
   effectiveTo: { type: Date, default: null }

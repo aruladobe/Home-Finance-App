@@ -9,7 +9,7 @@ import { formatCurrency, filterByPeriod, filterByFY, sumAmounts, calculateProjec
 import { format } from 'date-fns';
 
 const INCOME_TYPES = ['Salary', 'Earning', 'Interest', 'House Rent', 'Other Source'];
-const PERIODS = ['daily', 'monthly', 'yearly'];
+const PERIODS = ['daily', 'weekly', 'monthly', 'quarterly', 'half-yearly', 'yearly'];
 
 const TYPE_COLORS = {
   Salary: 'bg-emerald-500/20 text-emerald-400',

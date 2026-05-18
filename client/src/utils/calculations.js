@@ -1,5 +1,6 @@
 import {
   startOfMonth, endOfMonth, startOfYear, endOfYear, startOfDay, endOfDay,
+  startOfWeek, endOfWeek,
   isWithinInterval, parseISO, differenceInDays, differenceInMonths, differenceInYears,
   isBefore, isAfter, min as dateMin, max as dateMax
 } from 'date-fns';
@@ -53,7 +54,18 @@ export const filterByPeriod = (items, period) => {
   const now = new Date();
   let start, end;
   if (period === 'daily') { start = startOfDay(now); end = endOfDay(now); }
+  else if (period === 'weekly') { start = startOfWeek(now); end = endOfWeek(now); }
   else if (period === 'monthly') { start = startOfMonth(now); end = endOfMonth(now); }
+  else if (period === 'quarterly') {
+    const qMonth = Math.floor(now.getMonth() / 3) * 3;
+    start = new Date(now.getFullYear(), qMonth, 1);
+    end = endOfMonth(new Date(now.getFullYear(), qMonth + 2, 1));
+  }
+  else if (period === 'half-yearly') {
+    const hMonth = now.getMonth() < 6 ? 0 : 6;
+    start = new Date(now.getFullYear(), hMonth, 1);
+    end = endOfMonth(new Date(now.getFullYear(), hMonth + 5, 1));
+  }
   else if (period === 'yearly') { start = startOfYear(now); end = endOfYear(now); }
   else return items;
 
@@ -114,7 +126,13 @@ export const calculateProjection = (amount, period, effectiveFrom, effectiveTo) 
 
   if (isNaN(from.getTime())) return null;
 
+  const diffWeeks = (a, b) => Math.floor(differenceInDays(a, b) / 7);
+  const diffQuarters = (a, b) => Math.floor(differenceInMonths(a, b) / 3);
+  const diffHalfYears = (a, b) => Math.floor(differenceInMonths(a, b) / 6);
   const diffFn = period === 'daily' ? differenceInDays
+    : period === 'weekly' ? diffWeeks
+    : period === 'quarterly' ? diffQuarters
+    : period === 'half-yearly' ? diffHalfYears
     : period === 'yearly' ? differenceInYears
     : differenceInMonths;
 

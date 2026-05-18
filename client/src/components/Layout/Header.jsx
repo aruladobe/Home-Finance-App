@@ -65,20 +65,28 @@ export default function Header({ onMenuClick }) {
         <div
           role="group"
           aria-label="Filter by period"
-          className={`hidden sm:flex items-center gap-1 glass-card p-1 transition-opacity ${financialYear ? 'opacity-30 pointer-events-none' : ''}`}
+          className={`hidden sm:flex items-center gap-0.5 glass-card p-1 transition-opacity ${financialYear ? 'opacity-30 pointer-events-none' : ''}`}
         >
-          {['daily', 'monthly', 'yearly'].map(p => (
+          {[
+            { value: 'daily',       label: '1D' },
+            { value: 'weekly',      label: '1W' },
+            { value: 'monthly',     label: '1M' },
+            { value: 'quarterly',   label: '3M' },
+            { value: 'half-yearly', label: '6M' },
+            { value: 'yearly',      label: '1Y' },
+          ].map(({ value, label }) => (
             <button
-              key={p}
-              onClick={() => setPeriod(p)}
-              aria-pressed={period === p}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-all duration-200 ${
-                period === p
+              key={value}
+              onClick={() => setPeriod(value)}
+              aria-pressed={period === value}
+              aria-label={value}
+              className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${
+                period === value
                   ? 'bg-primary-600 text-white shadow-lg shadow-primary-900/30'
                   : 'text-slate-400 dark:text-white/50 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10'
               }`}
             >
-              {p}
+              {label}
             </button>
           ))}
         </div>

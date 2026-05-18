@@ -11,7 +11,7 @@ import { formatCurrency, filterByPeriod, filterByFY, sumAmounts, groupByCategory
 import { format, isPast, isToday, differenceInDays, addDays } from 'date-fns';
 
 const CATEGORIES = ['Kids','Education','Transport','Grocery','Entertainment','Service and Maintenance','Furniture','Medicine','Functions and Celebrations','Insurance','Loan Repayment','Bills', 'Rent', 'Fuel and Gas','Outing','Party','Others'];
-const PERIODS = ['daily','monthly','yearly'];
+const PERIODS = ['daily','weekly','monthly','quarterly','half-yearly','yearly'];
 
 const today = new Date().toISOString().split('T')[0];
 const emptyForm = {
@@ -262,7 +262,9 @@ export default function ExpensesPage() {
                       <th scope="col" onClick={() => toggle('familyMemberName')} aria-sort={sortKey === 'familyMemberName' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'} className="table-header text-left px-5 py-3 hidden sm:table-cell cursor-pointer select-none hover:text-slate-900 dark:hover:text-white transition-colors">
                         <span className="flex items-center">Member <SortIcon col="familyMemberName" sortKey={sortKey} sortDir={sortDir} /></span>
                       </th>
-                      <th scope="col" className="table-header text-left px-5 py-3 hidden md:table-cell">Effective Range</th>
+                      <th scope="col" onClick={() => toggle('effectiveFrom')} aria-sort={sortKey === 'effectiveFrom' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'} className="table-header text-left px-5 py-3 hidden md:table-cell cursor-pointer select-none hover:text-slate-900 dark:hover:text-white transition-colors">
+                        <span className="flex items-center">Effective Range <SortIcon col="effectiveFrom" sortKey={sortKey} sortDir={sortDir} /></span>
+                      </th>
                       <th scope="col" onClick={() => toggle('amount')} aria-sort={sortKey === 'amount' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'} className="table-header text-right px-5 py-3 cursor-pointer select-none hover:text-slate-900 dark:hover:text-white transition-colors">
                         <span className="flex items-center justify-end">Amount <SortIcon col="amount" sortKey={sortKey} sortDir={sortDir} /></span>
                       </th>

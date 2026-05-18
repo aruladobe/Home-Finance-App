@@ -256,3 +256,11 @@
   border-radius: 12px !important;
   color: var(--body-text) !important;
 }
+
+
+#panel-planned, #panel-actual {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 24px;
+    width: 100%;
+}
