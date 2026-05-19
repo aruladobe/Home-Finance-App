@@ -6,10 +6,10 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true },
   relationship: {
     type: String,
-    enum: ['Father', 'Mother', 'Son', 'Daughter', 'Spouse', 'Grandfather', 'Grandmother', 'Other'],
-    default: 'Father'
+    enum: ['Self', 'Father', 'Mother', 'Brother', 'Sister', 'Son', 'Daughter', 'Spouse', 'Grandfather', 'Grandmother', 'Other'],
+    default: 'Self'
   },
-  role: { type: String, enum: ['admin', 'member'], default: 'admin' },
+  role: { type: String, enum: ['admin', 'user', 'manager'], default: 'admin' },
   avatar: { type: String, default: '' },
   phone: { type: String, default: '' }
 }, { timestamps: true });

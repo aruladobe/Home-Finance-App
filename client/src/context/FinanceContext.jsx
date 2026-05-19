@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { incomeAPI, expenseAPI, investmentAPI, familyAPI } from '../utils/api';
+import { incomeAPI, expenseAPI, investmentAPI, familyAPI, plannedExpenseAPI } from '../utils/api';
 import { storage } from '../utils/localStorage';
+import { getCurrentFY } from '../utils/calculations';
 import { useAuth } from './AuthContext';
 
 const FinanceContext = createContext(null);
@@ -11,28 +12,33 @@ export const FinanceProvider = ({ children }) => {
   const [expenses, setExpenses] = useState([]);
   const [investments, setInvestments] = useState([]);
   const [familyMembers, setFamilyMembers] = useState([]);
+  const [plannedExpenses, setPlannedExpenses] = useState([]);
   const [loading, setLoading] = useState(false);
   const [period, setPeriod] = useState('monthly');
+  const [financialYear, setFinancialYear] = useState(null);
 
   const fetchAll = useCallback(async () => {
     if (!user) return;
     setLoading(true);
     try {
-      const [inc, exp, inv, fam] = await Promise.all([
+      const [inc, exp, inv, fam, planned] = await Promise.all([
         incomeAPI.getAll(),
         expenseAPI.getAll(),
         investmentAPI.getAll(),
         familyAPI.getAll(),
+        plannedExpenseAPI.getAll(),
       ]);
       const incData = inc.data; setIncome(incData); storage.syncIncome(incData);
       const expData = exp.data; setExpenses(expData); storage.syncExpenses(expData);
       const invData = inv.data; setInvestments(invData); storage.syncInvestments(invData);
       const famData = fam.data; setFamilyMembers(famData); storage.syncFamilyMembers(famData);
+      const planData = planned.data; setPlannedExpenses(planData); storage.syncPlannedExpenses(planData);
     } catch {
       setIncome(storage.getIncome());
       setExpenses(storage.getExpenses());
       setInvestments(storage.getInvestments());
       setFamilyMembers(storage.getFamilyMembers());
+      setPlannedExpenses(storage.getPlannedExpenses());
     } finally {
       setLoading(false);
     }
@@ -142,6 +148,61 @@ export const FinanceProvider = ({ children }) => {
     storage.deleteInvestment(id);
   };
 
+  const addPlannedExpense = async (data) => {
+    try {
+      const res = await plannedExpenseAPI.create(data);
+      const item = res.data;
+      setPlannedExpenses(prev => [...prev, item].sort((a, b) => new Date(a.effectiveDate) - new Date(b.effectiveDate)));
+      storage.addPlannedExpense(item);
+      return item;
+    } catch {
+      const item = storage.addPlannedExpense({ ...data, _id: Date.now().toString() });
+      setPlannedExpenses(prev => [...prev, item].sort((a, b) => new Date(a.effectiveDate) - new Date(b.effectiveDate)));
+      return item;
+    }
+  };
+
+  const updatePlannedExpense = async (id, data) => {
+    try {
+      const res = await plannedExpenseAPI.update(id, data);
+      const item = res.data;
+      setPlannedExpenses(prev => prev.map(i => (i._id === id || i.id === id) ? item : i));
+      storage.updatePlannedExpense(id, item);
+      return item;
+    } catch {
+      const item = storage.updatePlannedExpense(id, data);
+      setPlannedExpenses(prev => prev.map(i => (i._id === id || i.id === id) ? item : i));
+      return item;
+    }
+  };
+
+  const deletePlannedExpense = async (id) => {
+    try { await plannedExpenseAPI.delete(id); } catch {}
+    setPlannedExpenses(prev => prev.filter(i => i._id !== id && i.id !== id));
+    storage.deletePlannedExpense(id);
+  };
+
+  const movePlannedToExpense = async (id, date) => {
+    try {
+      const res = await plannedExpenseAPI.move(id, { date });
+      const expense = res.data.expense;
+      setPlannedExpenses(prev => prev.filter(i => i._id !== id && i.id !== id));
+      storage.deletePlannedExpense(id);
+      setExpenses(prev => [expense, ...prev]);
+      storage.addExpense(expense);
+      return expense;
+    } catch {
+      // Fallback: find planned, create local expense, remove planned
+      const planned = plannedExpenses.find(i => i._id === id || i.id === id);
+      if (!planned) return;
+      const expense = storage.addExpense({ ...planned, _id: Date.now().toString(), date: date || planned.effectiveDate });
+      setExpenses(prev => [expense, ...prev]);
+      setPlannedExpenses(prev => prev.filter(i => i._id !== id && i.id !== id));
+      storage.deletePlannedExpense(id);
+      return expense;
+    }
+  };
+
   const addFamilyMember = async (data) => {
     try {
       const res = await familyAPI.create(data);
@@ -178,12 +239,13 @@ export const FinanceProvider = ({ children }) => {
 
   return (
     <FinanceContext.Provider value={{
-      income, expenses, investments, familyMembers,
-      loading, period, setPeriod, fetchAll,
+      income, expenses, investments, familyMembers, plannedExpenses,
+      loading, period, setPeriod, financialYear, setFinancialYear, fetchAll,
       addIncome, updateIncome, deleteIncome,
       addExpense, updateExpense, deleteExpense,
       addInvestment, updateInvestment, deleteInvestment,
       addFamilyMember, updateFamilyMember, deleteFamilyMember,
+      addPlannedExpense, updatePlannedExpense, deletePlannedExpense, movePlannedToExpense,
     }}>
       {children}
     </FinanceContext.Provider>

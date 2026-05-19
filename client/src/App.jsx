@@ -10,6 +10,7 @@ import ExpensesPage from './pages/Expenses';
 import InvestmentPage from './pages/Investment';
 import ProfitPage from './pages/Profit';
 import UserManagement from './pages/UserManagement';
+import CalculatorPage from './pages/Calculator';
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -17,7 +18,7 @@ const ProtectedRoute = ({ children }) => {
     <div className="min-h-screen flex items-center justify-center">
       <div className="text-center">
         <div className="w-12 h-12 border-2 border-primary-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-        <p className="text-white/50">Loading...</p>
+        <p className="text-slate-400 dark:text-white/50">Loading...</p>
       </div>
     </div>
   );
@@ -51,6 +52,7 @@ export default function App() {
         <Route path="/investments" element={<InvestmentPage />} />
         <Route path="/profit" element={<ProfitPage />} />
         <Route path="/users" element={<UserManagement />} />
+        <Route path="/calculator" element={<CalculatorPage />} />
       </Route>
     </Routes>
   );

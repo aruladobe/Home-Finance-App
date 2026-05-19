@@ -7,7 +7,7 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
+app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:5173', credentials: true }));
 app.use(express.json());
 
 mongoose.connect(process.env.MONGODB_URI)
@@ -19,6 +19,7 @@ app.use('/api/income', require('./routes/income'));
 app.use('/api/expenses', require('./routes/expenses'));
 app.use('/api/investments', require('./routes/investments'));
 app.use('/api/family-members', require('./routes/familyMembers'));
+app.use('/api/planned-expenses', require('./routes/plannedExpenses'));
 
 app.get('/api/health', (req, res) => res.json({ status: 'OK' }));
 

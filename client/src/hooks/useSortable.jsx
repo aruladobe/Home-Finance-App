@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
 
 export function SortIcon({ col, sortKey, sortDir }) {
-  if (col !== sortKey) return <ChevronsUpDown size={12} className="inline ml-1 text-white/20" />;
+  if (col !== sortKey) return <ChevronsUpDown size={12} className="inline ml-1 text-slate-400 dark:text-white/20" />;
   return sortDir === 'asc'
     ? <ChevronUp size={12} className="inline ml-1 text-primary-400" />
     : <ChevronDown size={12} className="inline ml-1 text-primary-400" />;

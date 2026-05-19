@@ -6,13 +6,15 @@ const expenseSchema = new mongoose.Schema({
   familyMemberName: { type: String, default: '' },
   category: {
     type: String,
-    enum: ['Kids', 'Education', 'Transport', 'Grocery', 'Entertainment', 'Maintenance', 'Furniture', 'Medicine', 'Functions', 'Celebrations', 'Insurance'],
+    enum: ['Kids', 'Education', 'Transport', 'Grocery', 'Entertainment', 'Service and Maintenance', 'Furniture', 'Medicine', 'Functions and Celebrations', 'Insurance', 'Loan Repayment', 'Bills', 'Rent', 'Fuel and Gas', 'Outing', 'Party', 'Others'],
     required: true
   },
   amount: { type: Number, required: true, min: 0 },
   description: { type: String, default: '' },
   date: { type: Date, required: true, default: Date.now },
-  period: { type: String, enum: ['daily', 'monthly', 'yearly'], default: 'monthly' }
+  period: { type: String, enum: ['daily', 'weekly', 'monthly', 'quarterly', 'half-yearly', 'yearly'], default: 'monthly' },
+  effectiveFrom: { type: Date, default: null },
+  effectiveTo: { type: Date, default: null }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Expense', expenseSchema);

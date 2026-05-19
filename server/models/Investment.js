@@ -6,7 +6,7 @@ const investmentSchema = new mongoose.Schema({
   familyMemberName: { type: String, default: '' },
   type: {
     type: String,
-    enum: ['Stocks', 'Mutual Funds', 'Fixed Deposit', 'Real Estate', 'Gold', 'Crypto', 'PPF', 'NPS', 'Other'],
+    enum: ['Stocks', 'Mutual Funds', 'Fixed Deposit', 'Real Estate', 'Gold', 'Crypto', 'PPF', 'NPS', 'Insurance', 'Other'],
     required: true
   },
   amount: { type: Number, required: true, min: 0 },
@@ -15,8 +15,10 @@ const investmentSchema = new mongoose.Schema({
   description: { type: String, default: '' },
   date: { type: Date, required: true, default: Date.now },
   maturityDate: { type: Date },
-  period: { type: String, enum: ['daily', 'monthly', 'yearly'], default: 'monthly' },
-  status: { type: String, enum: ['active', 'matured', 'withdrawn'], default: 'active' }
+  period: { type: String, enum: ['daily', 'weekly', 'monthly', 'quarterly', 'half-yearly', 'yearly'], default: 'monthly' },
+  status: { type: String, enum: ['active', 'matured', 'withdrawn'], default: 'active' },
+  effectiveFrom: { type: Date, default: null },
+  effectiveTo: { type: Date, default: null }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Investment', investmentSchema);

@@ -27,31 +27,32 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      <div aria-hidden="true" className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary-600/10 rounded-full blur-3xl" />
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl" />
       </div>
 
       <div className="w-full max-w-md animate-slide-up">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-500 to-purple-600 shadow-2xl shadow-primary-900/50 mb-4">
+          <div aria-hidden="true" className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-500 to-purple-600 shadow-2xl shadow-primary-900/50 mb-4">
             <Home size={26} className="text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">Welcome Back</h1>
-          <p className="text-white/50">Sign in to manage your family finances</p>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Welcome Back</h1>
+          <p className="text-slate-500 dark:text-white/50">Sign in to manage your family finances</p>
         </div>
 
         <div className="glass-card p-8">
           {error && (
-            <div className="mb-4 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
+            <div role="alert" className="mb-4 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 dark:text-red-400 text-sm">
               {error}
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="label">Email Address</label>
+              <label htmlFor="login-email" className="label">Email Address</label>
               <input
+                id="login-email"
                 type="email"
                 className="input-field"
                 placeholder="you@example.com"
@@ -62,9 +63,10 @@ export default function Login() {
             </div>
 
             <div>
-              <label className="label">Password</label>
+              <label htmlFor="login-password" className="label">Password</label>
               <div className="relative">
                 <input
+                  id="login-password"
                   type={showPw ? 'text' : 'password'}
                   className="input-field pr-11"
                   placeholder="Enter your password"
@@ -75,9 +77,11 @@ export default function Login() {
                 <button
                   type="button"
                   onClick={() => setShowPw(!showPw)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/70 transition-colors"
+                  aria-label={showPw ? 'Hide password' : 'Show password'}
+                  aria-controls="login-password"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/30 hover:text-slate-600 dark:hover:text-white/70 transition-colors"
                 >
-                  {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
+                  {showPw ? <EyeOff size={16} aria-hidden="true" /> : <Eye size={16} aria-hidden="true" />}
                 </button>
               </div>
             </div>
@@ -88,10 +92,10 @@ export default function Login() {
               className="btn-primary w-full flex items-center justify-center gap-2 mt-6"
             >
               {loading ? (
-                <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <span aria-hidden="true" className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
                 <>
-                  <LogIn size={18} />
+                  <LogIn size={18} aria-hidden="true" />
                   Sign In
                 </>
               )}
@@ -99,9 +103,9 @@ export default function Login() {
           </form>
         </div>
 
-        <p className="text-center mt-6 text-white/50 text-sm">
+        <p className="text-center mt-6 text-slate-500 dark:text-white/50 text-sm">
           Don&apos;t have an account?{' '}
-          <Link to="/signup" className="text-primary-400 hover:text-primary-300 font-medium transition-colors">
+          <Link to="/signup" className="text-primary-500 dark:text-primary-400 hover:text-primary-600 dark:hover:text-primary-300 font-medium transition-colors">
             Create Account
           </Link>
         </p>

@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -r \"\\\\$\\\\|₹\\\\|currency\" /Users/arulk/Documents/personal/finance-app/client/src --include=\"*.ts\" --include=\"*.tsx\" --include=\"*.js\" --include=\"*.jsx\" -n)",
+      "Bash(brew services *)",
+      "Bash(echo \"exit:$?\")",
+      "Bash(curl -s http://localhost:5000/api/health)",
+      "Bash(xargs kill -9)",
+      "Read(//Users/arulk/Documents/personal/finance-app/**)",
+      "Bash(node server/index.js)",
+      "Bash(curl -s -o /dev/null -w \"planned-expenses status: %{http_code}\\\\n\" http://localhost:5000/api/planned-expenses)"
+    ]
+  }
+}

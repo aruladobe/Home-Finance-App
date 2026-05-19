@@ -24,7 +24,11 @@ router.get('/', auth, async (req, res) => {
 
 router.post('/', auth, async (req, res) => {
   try {
-    const expense = new Expense({ ...req.body, userId: req.user.id });
+    const body = { ...req.body, userId: req.user.id };
+    if (body.familyMemberId === '') body.familyMemberId = null;
+    if (body.effectiveFrom === '') body.effectiveFrom = null;
+    if (body.effectiveTo === '') body.effectiveTo = null;
+    const expense = new Expense(body);
     await expense.save();
     res.status(201).json(expense);
   } catch (err) {
@@ -34,9 +38,13 @@ router.post('/', auth, async (req, res) => {
 
 router.put('/:id', auth, async (req, res) => {
   try {
+    const body = { ...req.body };
+    if (body.familyMemberId === '') body.familyMemberId = null;
+    if (body.effectiveFrom === '') body.effectiveFrom = null;
+    if (body.effectiveTo === '') body.effectiveTo = null;
     const expense = await Expense.findOneAndUpdate(
       { _id: req.params.id, userId: req.user.id },
-      req.body, { new: true }
+      body, { new: true }
     );
     if (!expense) return res.status(404).json({ message: 'Not found' });
     res.json(expense);

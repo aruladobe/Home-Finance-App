@@ -2,15 +2,24 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import App from './App';
 import './index.css';
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(registrations => {
+    registrations.forEach(r => r.unregister());
+  });
+}
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
-      <AuthProvider>
-        <App />
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <App />
+        </AuthProvider>
+      </ThemeProvider>
     </BrowserRouter>
   </StrictMode>
 );
