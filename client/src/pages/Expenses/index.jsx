@@ -54,6 +54,9 @@ export default function ExpensesPage() {
   const [moveDate, setMoveDate] = useState('');
   const [moving, setMoving] = useState(false);
 
+  const [detailItem, setDetailItem] = useState(null);
+  const [detailPlanned, setDetailPlanned] = useState(null);
+
   const filtered = useMemo(() => {
     let data = financialYear ? filterByFY(expenses, financialYear) : filterByPeriod(expenses, period);
     if (filterCat) data = data.filter(e => e.category === filterCat);
@@ -280,7 +283,7 @@ export default function ExpensesPage() {
                         ? calculateProjection(item.amount, item.period, item.effectiveFrom, item.effectiveTo)
                         : null;
                       return (
-                        <tr key={item._id || item.id} className="table-row">
+                        <tr key={item._id || item.id} onClick={() => setDetailItem(item)} className="table-row cursor-pointer">
                           <td className="px-5 py-3">
                             <div className="flex items-center gap-2">
                               <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: CATEGORY_COLORS[item.category] || '#6366f1' }} />
@@ -308,8 +311,8 @@ export default function ExpensesPage() {
                           </td>
                           <td className="px-5 py-3 text-right">
                             <div className="flex items-center justify-end gap-1">
-                              <button onClick={() => openEdit(item)} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400 dark:text-white/40 hover:text-primary-500 dark:hover:text-primary-400 transition-colors"><Edit2 size={14} /></button>
-                              <button onClick={() => handleDelete(item._id || item.id)} className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 text-slate-400 dark:text-white/40 hover:text-red-500 dark:hover:text-red-400 transition-colors"><Trash2 size={14} /></button>
+                              <button onClick={e => { e.stopPropagation(); openEdit(item); }} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400 dark:text-white/40 hover:text-primary-500 dark:hover:text-primary-400 transition-colors"><Edit2 size={14} /></button>
+                              <button onClick={e => { e.stopPropagation(); handleDelete(item._id || item.id); }} className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 text-slate-400 dark:text-white/40 hover:text-red-500 dark:hover:text-red-400 transition-colors"><Trash2 size={14} /></button>
                             </div>
                           </td>
                         </tr>
@@ -444,7 +447,7 @@ export default function ExpensesPage() {
               const isDue = isPast(d) || isToday(d);
               const isSoon = !isDue && days <= 5;
               return (
-                <div key={item._id || item.id} className={`flex items-center justify-between p-3 rounded-xl ${isDue ? 'bg-red-500/10 border border-red-500/20' : isSoon ? 'bg-amber-500/10 border border-amber-500/20' : 'bg-slate-50 dark:bg-white/5'}`}>
+                <div key={item._id || item.id} onClick={() => setDetailPlanned(item)} className={`flex items-center justify-between p-3 rounded-xl cursor-pointer ${isDue ? 'bg-red-500/10 border border-red-500/20' : isSoon ? 'bg-amber-500/10 border border-amber-500/20' : 'bg-slate-50 dark:bg-white/5'}`}>
                   <div className="flex items-center gap-2.5 min-w-0">
                     <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: CATEGORY_COLORS[item.category] || '#6366f1' }} />
                     <div className="min-w-0">
@@ -463,7 +466,7 @@ export default function ExpensesPage() {
                     }
                     <span className="text-sm font-semibold text-expense">{formatCurrency(item.amount)}</span>
                     <button
-                      onClick={() => openMoveModal(item)}
+                      onClick={e => { e.stopPropagation(); openMoveModal(item); }}
                       aria-label="Mark as done — move to actual expenses"
                       className="p-1.5 rounded-lg hover:bg-green-50 dark:hover:bg-green-500/10 text-slate-400 dark:text-white/40 hover:text-green-500 dark:hover:text-green-400 transition-colors"
                     >
@@ -476,6 +479,176 @@ export default function ExpensesPage() {
           </div>
         </div>
       )}
+
+      {/* Planned expense detail modal */}
+      <Modal isOpen={!!detailPlanned} onClose={() => setDetailPlanned(null)} title="Planned Expense Details">
+        {detailPlanned && (() => {
+          const d = new Date(detailPlanned.effectiveDate);
+          const days = differenceInDays(d, new Date());
+          const isDue = isPast(d) || isToday(d);
+          const isSoon = !isDue && days <= 5;
+          const heroBg = isDue ? 'bg-red-500/10 border-red-500/20' : isSoon ? 'bg-amber-500/10 border-amber-500/20' : 'bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/10';
+          return (
+            <div className="space-y-4">
+              <div className={`flex items-center justify-between p-4 rounded-xl border ${heroBg}`}>
+                <div className="flex items-center gap-3">
+                  <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: CATEGORY_COLORS[detailPlanned.category] || '#6366f1' }} />
+                  <div>
+                    <p className="text-xs text-slate-400 dark:text-white/40">Category</p>
+                    <p className="text-base font-semibold text-slate-900 dark:text-white">{detailPlanned.category}</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-slate-400 dark:text-white/40">Amount</p>
+                  <p className="text-2xl font-bold text-expense">{formatCurrency(detailPlanned.amount)}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="glass-card p-3 rounded-xl">
+                  <p className="text-xs text-slate-400 dark:text-white/40 mb-0.5">Effective Date</p>
+                  <p className="text-sm font-medium text-slate-800 dark:text-white">{format(d, 'dd MMM yyyy')}</p>
+                </div>
+                <div className="glass-card p-3 rounded-xl">
+                  <p className="text-xs text-slate-400 dark:text-white/40 mb-0.5">Status</p>
+                  <div className="mt-0.5">
+                    {isDue
+                      ? <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-500/20 text-red-400">Due</span>
+                      : <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${isSoon ? 'bg-amber-500/20 text-amber-400' : 'bg-blue-500/20 text-blue-400'}`}>In {days}d</span>
+                    }
+                  </div>
+                </div>
+                <div className="glass-card p-3 rounded-xl">
+                  <p className="text-xs text-slate-400 dark:text-white/40 mb-0.5">Period</p>
+                  <p className="text-sm font-medium text-slate-800 dark:text-white capitalize">{detailPlanned.period || '—'}</p>
+                </div>
+                <div className="glass-card p-3 rounded-xl">
+                  <p className="text-xs text-slate-400 dark:text-white/40 mb-0.5">Family Member</p>
+                  <p className="text-sm font-medium text-slate-800 dark:text-white">{detailPlanned.familyMemberName || 'Self'}</p>
+                </div>
+              </div>
+
+              {detailPlanned.description && (
+                <div className="glass-card p-3 rounded-xl">
+                  <p className="text-xs text-slate-400 dark:text-white/40 mb-0.5">Description</p>
+                  <p className="text-sm text-slate-700 dark:text-white/80">{detailPlanned.description}</p>
+                </div>
+              )}
+              {detailPlanned.notes && (
+                <div className="glass-card p-3 rounded-xl">
+                  <p className="text-xs text-slate-400 dark:text-white/40 mb-0.5">Notes</p>
+                  <p className="text-sm text-slate-700 dark:text-white/80">{detailPlanned.notes}</p>
+                </div>
+              )}
+
+              <div className="flex gap-3 pt-1">
+                <button
+                  onClick={() => { setDetailPlanned(null); openEditPlanned(detailPlanned); }}
+                  className="btn-secondary flex-1 flex items-center justify-center gap-2"
+                >
+                  <Edit2 size={14} /> Edit
+                </button>
+                <button
+                  onClick={() => { setDetailPlanned(null); openMoveModal(detailPlanned); }}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-medium bg-green-500/10 text-green-400 hover:bg-green-500/20 transition-colors"
+                >
+                  <ArrowRight size={14} /> Mark as Done
+                </button>
+              </div>
+            </div>
+          );
+        })()}
+      </Modal>
+
+      {/* Expense detail modal */}
+      <Modal isOpen={!!detailItem} onClose={() => setDetailItem(null)} title="Expense Details">
+        {detailItem && (() => {
+          const proj = detailItem.effectiveFrom
+            ? calculateProjection(detailItem.amount, detailItem.period, detailItem.effectiveFrom, detailItem.effectiveTo)
+            : null;
+          return (
+            <div className="space-y-4">
+              {/* Category + amount hero */}
+              <div className="flex items-center justify-between p-4 rounded-xl bg-red-500/10 border border-red-500/20">
+                <div className="flex items-center gap-3">
+                  <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: CATEGORY_COLORS[detailItem.category] || '#6366f1' }} />
+                  <div>
+                    <p className="text-xs text-slate-400 dark:text-white/40">Category</p>
+                    <p className="text-base font-semibold text-slate-900 dark:text-white">{detailItem.category}</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-slate-400 dark:text-white/40">Amount</p>
+                  <p className="text-2xl font-bold text-expense">{formatCurrency(detailItem.amount)}</p>
+                </div>
+              </div>
+
+              {/* Detail grid */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="glass-card p-3 rounded-xl">
+                  <p className="text-xs text-slate-400 dark:text-white/40 mb-0.5">Transaction Date</p>
+                  <p className="text-sm font-medium text-slate-800 dark:text-white">
+                    {detailItem.date ? format(new Date(detailItem.date), 'dd MMM yyyy') : '—'}
+                  </p>
+                </div>
+                <div className="glass-card p-3 rounded-xl">
+                  <p className="text-xs text-slate-400 dark:text-white/40 mb-0.5">Period</p>
+                  <p className="text-sm font-medium text-slate-800 dark:text-white capitalize">{detailItem.period || '—'}</p>
+                </div>
+                <div className="glass-card p-3 rounded-xl">
+                  <p className="text-xs text-slate-400 dark:text-white/40 mb-0.5">Family Member</p>
+                  <p className="text-sm font-medium text-slate-800 dark:text-white">{detailItem.familyMemberName || 'Self'}</p>
+                </div>
+                <div className="glass-card p-3 rounded-xl">
+                  <p className="text-xs text-slate-400 dark:text-white/40 mb-0.5">Effective Range</p>
+                  {detailItem.effectiveFrom ? (
+                    <p className="text-sm font-medium text-slate-800 dark:text-white">
+                      {format(new Date(detailItem.effectiveFrom), 'dd MMM yy')}
+                      {detailItem.effectiveTo
+                        ? <> → {format(new Date(detailItem.effectiveTo), 'dd MMM yy')}</>
+                        : <span className="text-purple-400"> → ongoing</span>}
+                    </p>
+                  ) : (
+                    <p className="text-sm text-slate-400 dark:text-white/30">—</p>
+                  )}
+                </div>
+              </div>
+
+              {detailItem.description && (
+                <div className="glass-card p-3 rounded-xl">
+                  <p className="text-xs text-slate-400 dark:text-white/40 mb-0.5">Description</p>
+                  <p className="text-sm text-slate-700 dark:text-white/80">{detailItem.description}</p>
+                </div>
+              )}
+
+              {proj && (
+                <ProjectionPanel
+                  amount={detailItem.amount}
+                  period={detailItem.period}
+                  effectiveFrom={detailItem.effectiveFrom}
+                  effectiveTo={detailItem.effectiveTo}
+                  accentColor="text-red-400"
+                />
+              )}
+
+              <div className="flex gap-3 pt-1">
+                <button
+                  onClick={() => { setDetailItem(null); openEdit(detailItem); }}
+                  className="btn-secondary flex-1 flex items-center justify-center gap-2"
+                >
+                  <Edit2 size={14} /> Edit
+                </button>
+                <button
+                  onClick={() => { setDetailItem(null); handleDelete(detailItem._id || detailItem.id); }}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-medium bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors"
+                >
+                  <Trash2 size={14} /> Delete
+                </button>
+              </div>
+            </div>
+          );
+        })()}
+      </Modal>
 
       {/* Actual expense modal */}
       <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={editItem ? 'Edit Expense' : 'Add Expense'} size="lg">

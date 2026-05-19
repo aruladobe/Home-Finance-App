@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
@@ -7,9 +7,11 @@ import { TrendingUp, TrendingDown, Wallet, PiggyBank, ArrowUpRight, ArrowDownRig
 import { useFinance } from '../../context/FinanceContext';
 import { useTheme } from '../../context/ThemeContext';
 import StatCard from '../../components/common/StatCard';
+import Modal from '../../components/common/Modal';
+import ProjectionPanel from '../../components/common/ProjectionPanel';
 import {
   formatCurrency, formatCurrencyCompact, filterByPeriod, filterByFY, sumAmounts, calculateProfit,
-  groupByMonth, groupByCategory, CATEGORY_COLORS, INCOME_COLORS
+  groupByMonth, groupByCategory, CATEGORY_COLORS, INCOME_COLORS, calculateProjection
 } from '../../utils/calculations';
 import { format, isPast, isToday, differenceInDays, addDays } from 'date-fns';
 
@@ -60,6 +62,9 @@ export default function Dashboard() {
     filtered.income.forEach(i => { groups[i.type] = (groups[i.type] || 0) + Number(i.amount); });
     return Object.entries(groups).map(([name, value]) => ({ name, value }));
   }, [filtered.income]);
+
+  const [detailTx, setDetailTx] = useState(null);
+  const [detailPlanned, setDetailPlanned] = useState(null);
 
   const upcomingPlanned = useMemo(() => {
     const cutoff = addDays(new Date(), 30);
@@ -236,7 +241,7 @@ export default function Dashboard() {
               const isDue = isPast(d) || isToday(d);
               const isSoon = !isDue && days <= 5;
               return (
-                <div key={item._id || item.id} className={`flex items-center justify-between p-3 rounded-xl ${isDue ? 'bg-red-500/10 border border-red-500/20' : isSoon ? 'bg-amber-500/10 border border-amber-500/20' : 'bg-slate-50 dark:bg-white/5'}`}>
+                <div key={item._id || item.id} onClick={() => setDetailPlanned(item)} className={`flex items-center justify-between p-3 rounded-xl cursor-pointer ${isDue ? 'bg-red-500/10 border border-red-500/20' : isSoon ? 'bg-amber-500/10 border border-amber-500/20' : 'bg-slate-50 dark:bg-white/5'}`}>
                   <div className="flex items-center gap-2.5 min-w-0">
                     <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: CATEGORY_COLORS[item.category] || '#6366f1' }} />
                     <span className="text-sm text-slate-700 dark:text-white/80 truncate">{item.category}</span>
@@ -274,7 +279,7 @@ export default function Dashboard() {
               </thead>
               <tbody>
                 {recentTransactions.map(tx => (
-                  <tr key={tx._id || tx.id} className="table-row">
+                  <tr key={tx._id || tx.id} onClick={() => setDetailTx(tx)} className="table-row cursor-pointer">
                     <td className="py-3 pr-4">
                       <div className="flex items-center gap-2">
                         <div aria-hidden="true" className={`w-7 h-7 rounded-lg flex items-center justify-center ${tx._type === 'income' ? 'bg-income' : 'bg-expense'}`}>
@@ -308,6 +313,164 @@ export default function Dashboard() {
           </div>
         )}
       </div>
+      {/* Planned expense detail modal */}
+      <Modal isOpen={!!detailPlanned} onClose={() => setDetailPlanned(null)} title="Planned Expense Details">
+        {detailPlanned && (() => {
+          const d = new Date(detailPlanned.effectiveDate);
+          const days = differenceInDays(d, new Date());
+          const isDue = isPast(d) || isToday(d);
+          const isSoon = !isDue && days <= 5;
+          const heroBg = isDue ? 'bg-red-500/10 border-red-500/20' : isSoon ? 'bg-amber-500/10 border-amber-500/20' : 'bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/10';
+          return (
+            <div className="space-y-4">
+              <div className={`flex items-center justify-between p-4 rounded-xl border ${heroBg}`}>
+                <div className="flex items-center gap-3">
+                  <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: CATEGORY_COLORS[detailPlanned.category] || '#6366f1' }} />
+                  <div>
+                    <p className="text-xs text-slate-400 dark:text-white/40">Category</p>
+                    <p className="text-base font-semibold text-slate-900 dark:text-white">{detailPlanned.category}</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-slate-400 dark:text-white/40">Amount</p>
+                  <p className="text-2xl font-bold text-expense">{formatCurrency(detailPlanned.amount)}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="glass-card p-3 rounded-xl">
+                  <p className="text-xs text-slate-400 dark:text-white/40 mb-0.5">Effective Date</p>
+                  <p className="text-sm font-medium text-slate-800 dark:text-white">{format(d, 'dd MMM yyyy')}</p>
+                </div>
+                <div className="glass-card p-3 rounded-xl">
+                  <p className="text-xs text-slate-400 dark:text-white/40 mb-0.5">Status</p>
+                  <div className="mt-0.5">
+                    {isDue
+                      ? <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-500/20 text-red-400">Due</span>
+                      : <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${isSoon ? 'bg-amber-500/20 text-amber-400' : 'bg-blue-500/20 text-blue-400'}`}>In {days}d</span>
+                    }
+                  </div>
+                </div>
+                <div className="glass-card p-3 rounded-xl">
+                  <p className="text-xs text-slate-400 dark:text-white/40 mb-0.5">Period</p>
+                  <p className="text-sm font-medium text-slate-800 dark:text-white capitalize">{detailPlanned.period || '—'}</p>
+                </div>
+                <div className="glass-card p-3 rounded-xl">
+                  <p className="text-xs text-slate-400 dark:text-white/40 mb-0.5">Family Member</p>
+                  <p className="text-sm font-medium text-slate-800 dark:text-white">{detailPlanned.familyMemberName || 'Self'}</p>
+                </div>
+              </div>
+
+              {detailPlanned.description && (
+                <div className="glass-card p-3 rounded-xl">
+                  <p className="text-xs text-slate-400 dark:text-white/40 mb-0.5">Description</p>
+                  <p className="text-sm text-slate-700 dark:text-white/80">{detailPlanned.description}</p>
+                </div>
+              )}
+              {detailPlanned.notes && (
+                <div className="glass-card p-3 rounded-xl">
+                  <p className="text-xs text-slate-400 dark:text-white/40 mb-0.5">Notes</p>
+                  <p className="text-sm text-slate-700 dark:text-white/80">{detailPlanned.notes}</p>
+                </div>
+              )}
+            </div>
+          );
+        })()}
+      </Modal>
+
+      {/* Transaction detail modal */}
+      <Modal isOpen={!!detailTx} onClose={() => setDetailTx(null)} title="Transaction Details">
+        {detailTx && (() => {
+          const isExpense = detailTx._type === 'expense';
+          const accentColor = isExpense ? 'text-expense' : 'text-income';
+          const heroBg = isExpense ? 'bg-red-500/10 border-red-500/20' : 'bg-emerald-500/10 border-emerald-500/20';
+          const proj = detailTx.effectiveFrom
+            ? calculateProjection(detailTx.amount, detailTx.period, detailTx.effectiveFrom, detailTx.effectiveTo)
+            : null;
+          return (
+            <div className="space-y-4">
+              {/* Hero */}
+              <div className={`flex items-center justify-between p-4 rounded-xl border ${heroBg}`}>
+                <div className="flex items-center gap-3">
+                  {isExpense ? (
+                    <>
+                      <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: CATEGORY_COLORS[detailTx.category] || '#6366f1' }} />
+                      <div>
+                        <p className="text-xs text-slate-400 dark:text-white/40">Category</p>
+                        <p className="text-base font-semibold text-slate-900 dark:text-white">{detailTx.category}</p>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: INCOME_COLORS[detailTx.type] || '#10b981' }} />
+                      <div>
+                        <p className="text-xs text-slate-400 dark:text-white/40">Source</p>
+                        <p className="text-base font-semibold text-slate-900 dark:text-white">{detailTx.type}</p>
+                      </div>
+                    </>
+                  )}
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-slate-400 dark:text-white/40">Amount</p>
+                  <p className={`text-2xl font-bold ${accentColor}`}>
+                    {isExpense ? '-' : '+'}{formatCurrency(detailTx.amount)}
+                  </p>
+                </div>
+              </div>
+
+              {/* Detail grid */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="glass-card p-3 rounded-xl">
+                  <p className="text-xs text-slate-400 dark:text-white/40 mb-0.5">Date</p>
+                  <p className="text-sm font-medium text-slate-800 dark:text-white">
+                    {detailTx.date ? format(new Date(detailTx.date), 'dd MMM yyyy') : '—'}
+                  </p>
+                </div>
+                <div className="glass-card p-3 rounded-xl">
+                  <p className="text-xs text-slate-400 dark:text-white/40 mb-0.5">Period</p>
+                  <p className="text-sm font-medium text-slate-800 dark:text-white capitalize">{detailTx.period || '—'}</p>
+                </div>
+                <div className="glass-card p-3 rounded-xl">
+                  <p className="text-xs text-slate-400 dark:text-white/40 mb-0.5">Type</p>
+                  <p className="text-sm font-medium text-slate-800 dark:text-white capitalize">{detailTx._type}</p>
+                </div>
+                <div className="glass-card p-3 rounded-xl">
+                  <p className="text-xs text-slate-400 dark:text-white/40 mb-0.5">Family Member</p>
+                  <p className="text-sm font-medium text-slate-800 dark:text-white">{detailTx.familyMemberName || 'Self'}</p>
+                </div>
+                {detailTx.effectiveFrom && (
+                  <div className="glass-card p-3 rounded-xl col-span-2">
+                    <p className="text-xs text-slate-400 dark:text-white/40 mb-0.5">Effective Range</p>
+                    <p className="text-sm font-medium text-slate-800 dark:text-white">
+                      {format(new Date(detailTx.effectiveFrom), 'dd MMM yy')}
+                      {detailTx.effectiveTo
+                        ? <> → {format(new Date(detailTx.effectiveTo), 'dd MMM yy')}</>
+                        : <span className="text-purple-400"> → ongoing</span>}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {detailTx.description && (
+                <div className="glass-card p-3 rounded-xl">
+                  <p className="text-xs text-slate-400 dark:text-white/40 mb-0.5">Description</p>
+                  <p className="text-sm text-slate-700 dark:text-white/80">{detailTx.description}</p>
+                </div>
+              )}
+
+              {proj && (
+                <ProjectionPanel
+                  amount={detailTx.amount}
+                  period={detailTx.period}
+                  effectiveFrom={detailTx.effectiveFrom}
+                  effectiveTo={detailTx.effectiveTo}
+                  accentColor={isExpense ? 'text-red-400' : 'text-emerald-400'}
+                />
+              )}
+            </div>
+          );
+        })()}
+      </Modal>
     </div>
   );
 }
