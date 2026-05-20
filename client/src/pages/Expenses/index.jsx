@@ -52,6 +52,8 @@ export default function ExpensesPage() {
   const [moveModalOpen, setMoveModalOpen] = useState(false);
   const [moveItem, setMoveItem] = useState(null);
   const [moveDate, setMoveDate] = useState('');
+  const [moveEffectiveFrom, setMoveEffectiveFrom] = useState('');
+  const [moveEffectiveTo, setMoveEffectiveTo] = useState('');
   const [moving, setMoving] = useState(false);
 
   const [detailItem, setDetailItem] = useState(null);
@@ -151,7 +153,10 @@ export default function ExpensesPage() {
 
   const openMoveModal = (item) => {
     setMoveItem(item);
-    setMoveDate(new Date(item.effectiveDate).toISOString().split('T')[0]);
+    const dateStr = new Date(item.effectiveDate).toISOString().split('T')[0];
+    setMoveDate(dateStr);
+    setMoveEffectiveFrom(dateStr);
+    setMoveEffectiveTo('');
     setMoveModalOpen(true);
   };
 
@@ -159,7 +164,7 @@ export default function ExpensesPage() {
     if (!moveItem) return;
     setMoving(true);
     try {
-      await movePlannedToExpense(moveItem._id || moveItem.id, moveDate);
+      await movePlannedToExpense(moveItem._id || moveItem.id, moveDate, moveEffectiveFrom, moveEffectiveTo);
       setMoveModalOpen(false);
       setTab('actual');
     } finally { setMoving(false); }
@@ -791,10 +796,27 @@ export default function ExpensesPage() {
             <label htmlFor="move-expense-date" className="label">Actual Expense Date *</label>
             <input id="move-expense-date" type="date" className="input-field" value={moveDate} onChange={e => setMoveDate(e.target.value)} required />
           </div>
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <CalendarRange size={14} aria-hidden="true" className="text-red-400" />
+              <span className="text-sm font-medium text-slate-600 dark:text-white/70">Effective Date Range</span>
+              <span className="text-xs text-slate-400 dark:text-white/30">(for projection)</span>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label htmlFor="move-effective-from" className="label">From *</label>
+                <input id="move-effective-from" type="date" className="input-field" value={moveEffectiveFrom} onChange={e => setMoveEffectiveFrom(e.target.value)} required />
+              </div>
+              <div>
+                <label htmlFor="move-effective-to" className="label">To <span className="text-slate-400 dark:text-white/30">(blank = ongoing)</span></label>
+                <input id="move-effective-to" type="date" className="input-field" value={moveEffectiveTo} min={moveEffectiveFrom || undefined} onChange={e => setMoveEffectiveTo(e.target.value)} />
+              </div>
+            </div>
+          </div>
           <p className="text-xs text-slate-400 dark:text-white/40">This will remove the item from Planned Expenses and add it to your Actual Expenses.</p>
           <div className="flex gap-3 pt-1">
             <button type="button" onClick={() => setMoveModalOpen(false)} className="btn-secondary flex-1">Cancel</button>
-            <button onClick={handleMove} disabled={moving || !moveDate} className="btn-primary flex-1 flex items-center justify-center gap-2">
+            <button onClick={handleMove} disabled={moving || !moveDate || !moveEffectiveFrom} className="btn-primary flex-1 flex items-center justify-center gap-2">
               {moving
                 ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 : <><ArrowRight aria-hidden="true" size={16} /> Mark as Done</>}

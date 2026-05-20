@@ -182,9 +182,9 @@ export const FinanceProvider = ({ children }) => {
     storage.deletePlannedExpense(id);
   };
 
-  const movePlannedToExpense = async (id, date) => {
+  const movePlannedToExpense = async (id, date, effectiveFrom, effectiveTo) => {
     try {
-      const res = await plannedExpenseAPI.move(id, { date });
+      const res = await plannedExpenseAPI.move(id, { date, effectiveFrom, effectiveTo });
       const expense = res.data.expense;
       setPlannedExpenses(prev => prev.filter(i => i._id !== id && i.id !== id));
       storage.deletePlannedExpense(id);
@@ -195,7 +195,7 @@ export const FinanceProvider = ({ children }) => {
       // Fallback: find planned, create local expense, remove planned
       const planned = plannedExpenses.find(i => i._id === id || i.id === id);
       if (!planned) return;
-      const expense = storage.addExpense({ ...planned, _id: Date.now().toString(), date: date || planned.effectiveDate });
+      const expense = storage.addExpense({ ...planned, _id: Date.now().toString(), date: date || planned.effectiveDate, effectiveFrom: effectiveFrom || null, effectiveTo: effectiveTo || null });
       setExpenses(prev => [expense, ...prev]);
       setPlannedExpenses(prev => prev.filter(i => i._id !== id && i.id !== id));
       storage.deletePlannedExpense(id);

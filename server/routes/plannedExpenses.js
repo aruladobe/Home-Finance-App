@@ -67,6 +67,8 @@ router.post('/:id/move', auth, async (req, res) => {
       description: planned.description,
       date: req.body.date ? new Date(req.body.date) : planned.effectiveDate,
       period: planned.period,
+      effectiveFrom: req.body.effectiveFrom ? new Date(req.body.effectiveFrom) : null,
+      effectiveTo: req.body.effectiveTo ? new Date(req.body.effectiveTo) : null,
     });
     await expense.save();
     await PlannedExpense.findOneAndDelete({ _id: req.params.id, userId: req.user.id });
