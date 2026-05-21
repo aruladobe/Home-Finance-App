@@ -167,11 +167,11 @@ export const calculateProjection = (amount, period, effectiveFrom, effectiveTo) 
 
 export const CATEGORY_COLORS = {
   Kids: '#f43f5e', Education: '#8b5cf6', Transport: '#f59e0b',
-  Grocery: '#10b981', Entertainment: '#3b82f6', 'Service and Maintenance': '#6366f1',
-  Furniture: '#14b8a6', Medicine: '#ef4444', 'Functions and Celebrations': '#a855f7',
+  'Grocery or Shopping': '#10b981', Entertainment: '#3b82f6', 'Service and Maintenance': '#6366f1',
+  'Furniture or Appliances': '#14b8a6', 'Medicine or Hospitalization': '#ef4444', 'Functions and Celebrations': '#a855f7',
   Rent: '#ec4899', Insurance: '#0ea5e9',
   'Loan Repayment': '#dc2626', Bills: '#d97706', 'Fuel and Gas': '#7c3aed',
-  Outing: '#0891b2', Party: '#db2777', Others: '#64748b'
+  Party: '#db2777', Others: '#64748b'
 };
 
 export const INCOME_COLORS = {

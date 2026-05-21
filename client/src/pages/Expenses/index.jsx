@@ -10,17 +10,17 @@ import ProjectionPanel from '../../components/common/ProjectionPanel';
 import { formatCurrency, filterByPeriod, filterByFY, sumAmounts, groupByCategory, CATEGORY_COLORS, calculateProjection } from '../../utils/calculations';
 import { format, isPast, isToday, differenceInDays, addDays } from 'date-fns';
 
-const CATEGORIES = ['Kids','Education','Transport','Grocery','Entertainment','Service and Maintenance','Furniture','Medicine','Functions and Celebrations','Insurance','Loan Repayment','Bills', 'Rent', 'Fuel and Gas','Outing','Party','Others'];
+const CATEGORIES = ['Kids','Education','Transport','Grocery or Shopping','Entertainment','Service and Maintenance','Furniture or Appliances','Medicine or Hospitalization','Functions and Celebrations','Insurance','Loan Repayment','Bills', 'Rent', 'Fuel and Gas','Party','Others'];
 const PERIODS = ['daily','weekly','monthly','quarterly','half-yearly','yearly'];
 
 const today = new Date().toISOString().split('T')[0];
 const emptyForm = {
-  category: 'Grocery', amount: '', description: '',
+  category: 'Grocery or Shopping', amount: '', description: '',
   date: today, period: 'monthly',
   effectiveFrom: today, effectiveTo: '',
   familyMemberId: '', familyMemberName: ''
 };
-const emptyPlannedForm = { category: 'Grocery', amount: '', description: '', effectiveDate: '', period: 'monthly', familyMemberId: '', familyMemberName: '', notes: '' };
+const emptyPlannedForm = { category: 'Grocery or Shopping', amount: '', description: '', effectiveDate: '', period: 'monthly', familyMemberId: '', familyMemberName: '', notes: '' };
 
 function DueBadge({ effectiveDate }) {
   const date = new Date(effectiveDate);
